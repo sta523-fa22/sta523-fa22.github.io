@@ -45,7 +45,7 @@ jobs:
       
       - name: Clone github.io page
         run: |
-          git clone "https://$API_TOKEN_GITHUB@github.com/sta523-fa22/sta523-fa22.github.io.git"
+          git clone "https://rundel:${API_TOKEN_GITHUB}@github.com/sta523-fa22/sta523-fa22.github.io.git"
 
       - name: Sync changes
         run: |
