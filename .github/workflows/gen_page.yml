@@ -11,6 +11,7 @@ jobs:
       image: ghcr.io/sta523-fa22/sta523-base:latest
     env:
       GITHUB_PAT: ${{ secrets.CR_PAT }}
+      API_TOKEN_GITHUB: ${{ secrets.CR_PAT }}
     steps:
      
       - uses: actions/checkout@v2
