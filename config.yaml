@@ -1,0 +1,52 @@
+baseurl: "/"
+title: "Programming for Statistical Science"
+author: "Colin Rundel"
+copyright: "&copy; 2022. All rights reserved."
+ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+publishDir: "docs"
+
+menu:
+  main:
+  - name: Syllabus
+    pre: <i class='fa fa-file-text-o fa-fw'></i>
+    weight: 2
+    identifier: syllabus
+    url: "#syllabus"
+  - name: Sakai
+    pre: <i class="fas fa-chalkboard-teacher"></i>
+    weight: 3
+    url: https://sakai.duke.edu/portal/site/8eec3d1f-5157-4e23-891b-0ee3ac67fb38/page/623a03c3-2fe7-4327-bd17-a7d5f2c4f3b0
+  - name: Github
+    pre: <i class='fa fa-github fa-fw'></i>
+    weight: 6
+    url: https://github.com/sta523-fa22
+  - name: RStudio
+    pre: <i class='fab fa-r-project fa-fw'></i>
+    weight: 7
+    url: http://rstudio.stat.duke.edu:8787
+
+params:
+  subtitle: "(Fall 2022)"
+  course: "Sta 523"
+  highlightjs: androidstudio
+  highlightjs_extra_languages:
+    - yaml
+  dateFormat: '02 Jan 2006, 15:04'
+  sections:
+    - schedule
+    - syllabus
+    - textbooks
+    - about
+  contact:
+    - name: Dr. Colin Rundel
+      office:
+      email: colin.rundel@duke.edu
+      hours: TBD
+  assignments:
+    - name: Homework
+      type: Team
+      value: 50%
+    - name: Midterms
+      value: 40%
+    - name: Project
+      value: 10%

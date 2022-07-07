@@ -1,0 +1,706 @@
+---
+title: Tidymodels
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+exclude: true
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width = 80,
+  tibble.width = 80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center",
+  out.width = "80%",
+  dpi = 300,
+  fig.retina = 2
+)
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+
+options(width=60)
+options(tibble.width = 60)
+
+library(rstanarm)
+library(tidyverse)
+```
+
+
+---
+background-image: url(imgs/hex_tidymodels.png)
+background-position: center
+background-size: contain
+count: false
+---
+
+## Tidymodels
+
+```{r}
+library(tidymodels)
+```
+
+---
+
+## Book data
+
+.pull-left[
+```{r}
+(books = DAAG::allbacks %>%
+  as_tibble() %>%
+  select(-area) %>%
+  mutate(
+    cover = forcats::fct_recode(
+      cover, 
+      "hardback" = "hb", 
+      "paperback" = "pb"
+    )
+  )
+)
+```
+]
+
+--
+
+.pull-right[
+```{r out.width = "100%", fig.height=4}
+ggplot(books, aes(x=volume, y=weight, color = cover)) +
+  geom_point(size=2)
+```
+]
+
+---
+
+## Building a tidymodel
+
+```{r}
+linear_reg()
+```
+
+---
+
+## Building a tidymodel
+
+```{r}
+linear_reg() %>%
+  set_engine("lm")
+```
+
+---
+
+## Building a tidymodel
+
+.pull-left[
+```{r}
+linear_reg() %>%
+  set_engine("lm") %>%
+  fit(weight ~ volume * cover, data = books)
+```
+]
+
+--
+
+.pull-right[
+```{r}
+lm(weight ~ volume * cover, data = books)
+```
+]
+
+---
+background-image: url("imgs/hex_broom.png")
+background-position: 98% 2%
+background-size: 15%
+
+## Tidy model objects
+
+.pull-left[ .small[
+```{r}
+summary(lm(weight ~ volume * cover, data = books))
+```
+] ]
+
+--
+
+.pull-right[
+<br/>
+<br/>
+<br/>
+<br/>
+
+.small[
+
+```{r}
+lm_tm = linear_reg() %>%
+  set_engine("lm") %>%
+  fit(weight ~ volume * cover, data = books)
+```
+
+```{r}
+summary(lm_tm)
+```
+
+```{r}
+broom::tidy(lm_tm)
+```
+]
+]
+
+---
+
+## Tidy model statistics
+
+```{r}
+broom::glance(lm(weight ~ volume * cover, data = books))
+```
+
+```{r}
+broom::glance(lm_tm)
+```
+
+---
+
+## Tidy model prediction
+
+```{r}
+broom::augment(lm_tm, new_data = books)
+```
+
+---
+
+## Putting it together
+
+.small[
+```{r fig.height=3}
+lm_tm %>%
+  augment(
+    new_data = tidyr::expand_grid(
+      volume = seq(0, 1500, by=5),
+      cover = c("hardback", "paperback") %>% as.factor()
+    )
+  ) %>%
+  rename(weight = .pred) %>%
+  ggplot(aes(x = volume, y = weight, color = cover, group = cover)) +
+    geom_line() +
+    geom_point(data = books)
+```
+]
+---
+background-image: url("imgs/hex_parsnip.png")
+background-position: 98% 2%
+background-size: 15%
+
+
+## Why do we care?
+
+.pull-left[ .small[
+```{r}
+show_engines("linear_reg")
+```
+] ]
+
+.pull-right[
+ 
+]
+
+--
+
+.small[
+```{r}
+(bayes_tm = linear_reg() %>% 
+  set_engine(
+    "stan", 
+    prior_intercept = rstanarm::student_t(df = 1), 
+    prior = rstanarm::student_t(df = 1),
+    seed = 1234
+  ) 
+)
+```
+]
+
+
+---
+
+## Fitting with `rstanarm`
+
+.small[
+```{r}
+(bayes_tm = bayes_tm %>%
+  fit(weight ~ volume * cover, data = books)
+)
+```
+]
+
+
+.footnote[
+See `?details_linear_reg_stan` for details within `parsnip`
+]
+
+---
+
+## What was actually run?
+
+.small[
+```{r}
+linear_reg() %>% 
+  set_engine(
+    "stan", 
+    prior_intercept = rstanarm::student_t(df = 1), 
+    prior = rstanarm::student_t(df = 1),
+    seed = 1234
+  ) %>%
+  translate()
+```
+]
+
+---
+
+## Back to broom
+
+```{r error=TRUE}
+broom::tidy(bayes_tm)
+```
+
+```{r}
+broom.mixed::tidy(bayes_tm)
+```
+
+```{r}
+broom.mixed::glance(bayes_tm)
+```
+
+---
+
+## Augment
+
+```{r}
+augment(bayes_tm, new_data=books)
+```
+
+---
+
+## Predictions
+
+.small[
+```{r fig.height=3}
+bayes_tm %>%
+  augment(
+    new_data = tidyr::expand_grid(
+      volume = seq(0, 1500, by=5),
+      cover = c("hardback", "paperback") %>% as.factor()
+    )
+  ) %>%
+  rename(weight = .pred) %>%
+  ggplot(aes(x = volume, y = weight, color = cover, group = cover)) +
+    geom_line() +
+    geom_point(data = books)
+```
+]
+
+---
+background-image: url("imgs/hex_yardstick.png")
+background-position: 98% 2%
+background-size: 15%
+
+## Performance
+
+.pull-left[
+```{r}
+lm_tm %>%
+  augment(new_data = books) %>%
+  yardstick::rmse(weight, .pred)
+
+bayes_tm %>%
+  augment(new_data = books) %>%
+  yardstick::rmse(weight, .pred)
+```
+]
+
+.pull-right[
+
+]
+
+.footnote[
+More on combining these type of results later, see [`workflows`](https://workflows.tidymodels.org/)
+]
+
+---
+class: middle, center
+count: false
+
+# Cross validation and Feature engineering
+
+---
+
+## The Office & IMDB
+
+```{r message=FALSE}
+(office_ratings = read_csv("data/office_ratings.csv"))
+```
+
+.footnote[
+These data are from [data.world](https://data.world/anujjain7/the-office-imdb-ratings-dataset), by way of [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-03-17/readme.md).
+]
+
+---
+
+## Rating vs Air Date
+
+```{r echo=FALSE, fig.height=4}
+ggplot(office_ratings, aes(x = air_date, y = imdb_rating, color = as_factor(season), size = total_votes)) +
+  geom_point() +
+  scale_size(trans = "log10", range=c(0.5,4)) +
+  scale_color_discrete() +
+  labs(color = "season")
+```
+
+---
+background-image: url("imgs/hex_rsample.png")
+background-position: 98% 2%
+background-size: 15%
+
+## Test-train split
+
+.pull-left[
+```{r}
+set.seed(123)
+(office_split = initial_split(office_ratings, prop = 0.8))
+```
+]
+
+.pull-right[
+
+]
+
+--
+
+<br/>
+
+<div>
+
+.pull-left[
+```{r}
+(office_train = training(office_split))
+```
+]
+
+.pull-right[
+```{r}
+(office_test = testing(office_split))
+```
+]
+
+</div>
+
+---
+
+## Feature engineering with dplyr
+
+```{r echo=FALSE}
+options(width=100)
+options(tibble.width=100)
+```
+
+```{r}
+office_train %>%
+  mutate(
+    season = as_factor(season),
+    month = lubridate::month(air_date),
+    wday = lubridate::wday(air_date),
+    top10_votes = as.integer(total_votes > quantile(total_votes, 0.9))
+  )
+```
+
+--
+
+<br/>
+<br/>
+
+.center[
+Anyone see a potential problem with the code above?
+]
+
+---
+background-image: url("imgs/hex_recipes.png")
+background-position: 98% 2%
+background-size: 15%
+
+## Better living through recipes
+
+.pull-left[
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train))
+```  
+]
+
+.pull-right[
+
+]
+
+--
+
+<div>
+
+.pull-left[
+```{r}
+summary(r)
+```
+]
+
+.pull-right[]
+
+</div>
+
+---
+
+## Recipe roles
+
+.pull-left[
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID")
+)
+```
+]
+
+.pull-right[
+```{r}
+summary(r)
+```
+]
+
+---
+
+## Adding features (month & day of week)
+
+.pull-left[
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID") %>%
+  step_date(air_date, features = c("dow", "month"))
+)
+```
+]
+
+.pull-right[
+```{r}
+summary(r)
+```
+]
+
+---
+
+## Adding Holidays
+
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID") %>%
+  step_date(air_date, features = c("dow", "month")) %>%
+  step_holiday(
+    air_date, 
+    holidays = c("USThanksgivingDay", "USChristmasDay", "USNewYearsDay", "USIndependenceDay"), 
+    keep_original_cols = FALSE
+  )
+)
+```
+
+---
+
+## Seasons as factors
+
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID") %>%
+  step_date(air_date, features = c("dow", "month")) %>%
+  step_holiday(
+    air_date, 
+    holidays = c("USThanksgivingDay", "USChristmasDay", "USNewYearsDay", "USIndependenceDay"), 
+    keep_original_cols = FALSE
+  ) %>%
+  step_num2factor(season, levels = as.character(1:9))
+)
+```
+
+---
+
+## Dummy coding
+
+```{r}
+(r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID") %>%
+  step_date(air_date, features = c("dow", "month")) %>%
+  step_holiday(
+    air_date, 
+    holidays = c("USThanksgivingDay", "USChristmasDay", "USNewYearsDay", "USIndependenceDay"), 
+    keep_original_cols = FALSE
+  ) %>%
+  step_num2factor(season, levels = as.character(1:9)) %>%
+  step_dummy(all_nominal_predictors())
+)
+```
+
+---
+
+## Why no `top10_votes`?
+
+There does not appear to be a `step_*()` function that implements the quantile calculation necessary for the `top10_votes` feature above, custom recipe steps can be created see [this](https://www.tidymodels.org/learn/develop/recipes/) for an relevant example.
+
+---
+
+## Preparing a recipe
+
+```{r}
+prep(r)
+```
+
+---
+
+## Baking a recipe
+
+```{r}
+prep(r) %>%
+  bake(new_data = office_train)
+```
+
+---
+
+## Informative features?
+
+```{r}
+prep(r) %>%
+  bake(new_data = office_train) %>%
+  map_int(~ length(unique(.x)))
+```
+
+---
+
+## Removing zero variance predictors
+
+.small[
+```{r}
+r = recipe(imdb_rating ~ ., data = office_train) %>% 
+  update_role(title, new_role = "ID") %>%
+  step_date(air_date, features = c("dow", "month")) %>%
+  step_holiday(
+    air_date, 
+    holidays = c("USThanksgivingDay", "USChristmasDay", "USNewYearsDay", "USIndependenceDay"), 
+    keep_original_cols = FALSE
+  ) %>%
+  step_num2factor(season, levels = as.character(1:9)) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+
+prep(r) %>%
+  bake(new_data = office_train)
+```
+]
+
+---
+background-image: url("imgs/hex_workflows.png")
+background-position: 98% 2%
+background-size: 15%
+
+## Really putting it all together
+
+.pull-left[
+```{r}
+(office_work = workflow() %>%
+  add_recipe(r) %>%
+  add_model(
+    linear_reg() %>%
+    set_engine("lm")
+  )
+)
+```
+]
+
+.pull-right[
+
+]
+
+---
+
+## Workflow fit
+
+.small[
+```{r}
+(office_fit = office_work %>%
+  fit(data = office_train))
+```
+]
+
+
+---
+
+## Performance
+
+.pull-left[
+```{r}
+office_fit %>%
+  augment(office_train) %>%
+  rmse(imdb_rating, .pred)
+```
+]
+
+.pull-right[
+```{r}
+office_fit %>%
+  augment(office_test) %>%
+  rmse(imdb_rating, .pred)
+```
+]
+
+---
+
+## k-fold cross validation
+
+```{r echo=FALSE, out.width="80%", fig.align="center"}
+knitr::include_graphics("imgs/kfold-cv.png")
+```
+
+---
+
+## Creating folds
+
+```{r}
+set.seed(123)
+(folds = vfold_cv(office_train, v=5))
+```
+
+--
+
+```{r}
+(office_fit_folds = office_work %>%
+  fit_resamples(folds)
+)
+```
+
+---
+
+## Fold performance
+
+```{r}
+tune::collect_metrics(office_fit_folds)
+```
+
+--
+
+```{r}
+tune::collect_metrics(office_fit_folds, summarize = FALSE) %>%
+  filter(.metric == "rmse")
+```
+.footnote[
+More on the `tune` package next time
+]
+

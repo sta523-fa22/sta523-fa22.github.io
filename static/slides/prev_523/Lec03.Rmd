@@ -1,0 +1,866 @@
+---
+title: "Lec 03 - NAs, functions, loops, and merge conflicts"
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+
+---
+exclude: true
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+```
+
+---
+class: middle, center
+
+# Missing Values
+
+---
+  
+## Missing Values
+  
+R uses `NA` to represent missing values in its data structures, what may not be obvious is that there are different `NA`s for different atomic types.
+
+.pull-left[
+```{r}
+typeof(NA)
+typeof(NA+1)
+typeof(NA+1L)
+typeof(c(NA,""))
+```
+]
+
+--
+
+.pull-right[
+```{r}
+typeof(NA_character_)
+typeof(NA_real_)
+typeof(NA_integer_)
+typeof(NA_complex_)
+```
+]
+
+---
+  
+## NA "stickiness" 
+  
+Because `NA`s represent missing values it makes sense that any calculation using them should also be missing.
+
+.pull-left[
+```{r}
+1 + NA
+1 / NA
+NA * 5
+```
+]
+
+.pull-right[
+```{r}
+sqrt(NA)
+3^NA
+sum(c(1, 2, 3, NA))
+```
+]
+
+--
+
+<br/>
+
+Summarizing functions (e.g. `sum()`, `mean()`, `sd()`, etc.) will often have a `na.rm` argument which will allow you to *drop* missing values.
+
+```{r}
+sum(c(1, 2, 3, NA), na.rm = TRUE)
+mean(c(1, 2, 3, NA), na.rm = TRUE)
+```
+
+
+---
+  
+## NAs are not always sticky 
+  
+A useful mental model for `NA`s is to consider them as a unknown value that could take any of the possible values for that type. 
+
+--
+
+For numbers or characters this isn't very helpful, but for a logical value we know that the value must either be `TRUE` or `FALSE` and we can use that when deciding what value to return.
+
+--
+
+```{r}
+TRUE & NA
+```
+
+--
+
+```{r}
+FALSE & NA
+```
+
+--
+
+```{r}
+TRUE | NA
+```
+
+--
+
+```{r}
+FALSE | NA
+```
+
+
+---
+
+## Conditionals and missing values
+
+`NA`s can be problematic in some cases (particularly for control flow)
+
+```{r error=TRUE}
+1 == NA
+```
+
+--
+
+```{r error=TRUE}
+if (2 != NA)
+  "Here"
+```
+
+--
+
+```{r error=TRUE}
+if (all(c(1,2,NA,4) >= 1))
+  "There"
+```
+
+--
+
+```{r error=TRUE}
+if (any(c(1,2,NA,4) >= 1))
+  "There"
+```
+
+
+---
+
+## Testing for `NA`
+
+To explicitly test if a value is missing it is necessary to use `is.na` (often along with `any` or `all`).
+
+.pull-left[
+```{r}
+NA == NA
+is.na(NA)
+is.na(1)
+```
+]
+
+--
+
+.pull-right[
+```{r}
+is.na(c(1,2,3,NA))
+any(is.na(c(1,2,3,NA)))
+all(is.na(c(1,2,3,NA)))
+```
+]
+
+
+---
+
+## Other Special values (double)
+
+These are defined as part of the IEEE floating point standard (not unique to R)
+
+* `NaN` - Not a number
+* `Inf` - Positive infinity
+* `-Inf` - Negative infinity
+
+.pull-left[
+```{r}
+pi / 0
+0 / 0
+1/0 + 1/0
+```
+]
+
+.pull-right[
+```{r}
+1/0 - 1/0
+NaN / NA
+NaN * NA
+```
+]
+
+
+---
+
+## Testing for `Inf` and `NaN`
+
+`NaN` and `Inf` don't have the same testing issues that `NA`s do, but there are still convenience functions for testing for these types of values
+
+.pull-left[
+```{r}
+is.finite(Inf)
+is.infinite(-Inf)
+is.nan(Inf)
+is.nan(-Inf)
+Inf > 1
+-Inf > 1
+```
+]
+
+--
+  
+.pull-right[
+```{r}
+is.finite(NaN)
+is.infinite(NaN)
+is.nan(NaN)
+is.finite(NA)
+is.infinite(NA)
+is.nan(NA)
+```
+]
+
+
+---
+  
+## Coercion for infinity and NaN
+  
+First remember that `Inf`, `-Inf`, and `NaN` are doubles, however their coercion behavior is not the same as for other doubles
+
+```{r}
+as.integer(Inf)
+as.integer(NaN)
+```
+
+--
+
+.pull-left[
+```{r}
+as.logical(Inf)
+as.logical(-Inf)
+as.logical(NaN)
+```
+]
+
+--
+
+.pull-right[
+```{r}
+as.character(Inf)
+as.character(-Inf)
+as.character(NaN)
+```
+]
+
+---
+class: middle
+count: false
+
+# Functions
+
+---
+
+## Function Parts
+
+Functions are defined by two components: the arguments (`formals`) and the code (`body`). 
+
+Functions are assigned names like any other object in R (using `=` or `<-`)
+
+```{r}
+gcd = function(x1, y1, x2 = 0, y2 = 0) {
+  R = 6371 # Earth mean radius in km
+  
+  # distance in km
+  acos(sin(y1)*sin(y2) + cos(y1)*cos(y2) * cos(x2-x1)) * R
+}
+```
+
+--
+
+.pull-left[
+```{r}
+typeof(gcd)
+```
+]
+
+.pull-right[
+```{r}
+mode(gcd)
+```
+]
+
+--
+
+<div>
+.pull-left[
+```{r}
+formals(gcd)
+```
+]
+
+.pull-right[
+```{r}
+body(gcd)
+```
+]
+</div>
+
+
+---
+
+## Return values
+
+There are two approaches to returning values from functions in R - explicit and implicit returns.
+
+--
+
+**Explicit** - using one or more `return` function calls
+
+```{r}
+f = function(x) {
+  return(x * x)
+}
+
+f(2)
+```
+
+--
+
+<br/>
+
+**Implicit** - return value of the last expression is returned.
+
+```{r}
+g = function(x) {
+  x * x
+}
+
+g(3)
+```
+
+---
+
+## Invisible returns
+
+Many functions in R make use of an invisible return value
+
+```{r}
+f = function(x) {
+  print(x)
+}
+
+y = f(1)
+y
+```
+
+--
+
+```{r}
+g = function(x) {
+  invisible(x)
+}
+```
+
+```{r}
+g(2)
+```
+
+```{r}
+z = g(2)
+z
+```
+
+
+
+---
+
+## Returning multiple values
+
+If we want a function to return more than one value we can group things using atomic vectors or lists.
+
+```{r}
+f = function(x) {
+  c(x, x^2, x^3)
+}
+
+f(1:2)
+```
+
+--
+
+<br/>
+
+```{r}
+g = function(x) {
+  list(x, "hello")
+}
+
+g(1:2)
+```
+
+.footnote[More on generic vectors next Tuesday]
+
+---
+class: split-50
+
+## Argument names
+
+When defining a function we explicitly define names for the arguments, which become variables within the scope of the function.
+
+When calling a function we can use these names to pass arguments in an alternative order.
+
+
+```{r}
+f = function(x, y, z) {
+  paste0("x=", x, " y=", y, " z=", z)
+}
+```
+
+--
+
+.pull-left[
+```{r, error=TRUE}
+f(1, 2, 3)
+f(z=1, x=2, y=3)
+```
+]
+
+--
+
+.pull-right[
+```{r, error=TRUE}
+f(y=2, 1, 3)
+f(y=2, 1, x=3)
+```
+]
+
+--
+
+```{r, error=TRUE}
+f(1, 2, 3, 4)
+f(1, 2, m=3)
+```
+
+---
+
+## Argument defaults
+
+It is also possible to give function arguments default values, so that they don't need to be provided every time the function is called.
+
+```{r error=TRUE}
+f = function(x, y=1, z=1) {
+  paste0("x=", x, " y=", y, " z=", z)
+}
+```
+
+--
+
+.pull-left[
+```{r error=TRUE}
+f(3)
+f(x=3)
+```
+]
+
+--
+
+.pull-right[
+```{r error=TRUE}
+f(z=3, x=2)
+f(y=2, 2)
+```
+]
+
+--
+
+<br/>
+
+```{r, error=TRUE}
+f()
+```
+
+---
+
+## Scope
+
+R has generous scoping rules, if it can't find a variable in the functions body, it will look for it in the next higher scope, and so on.
+
+```{r}
+y = 1
+
+f = function(x) {
+  x + y
+}
+
+f(3)
+```
+
+--
+
+```{r}
+y = 1
+
+g = function(x) {
+  y = 2
+  x + y
+}
+
+g(3)
+y
+```
+
+---
+
+Additionally, variables defined within a scope only persist for the duration of that scope, and do not overwrite variables at a higher scopes
+
+```{r}
+x = 1
+y = 1
+z = 1
+
+f = function() {
+    y = 2
+    g = function() {
+      z = 3
+      return(x + y + z)
+    }
+    return(g())
+}
+
+f()
+
+c(x,y,z)
+```
+
+---
+
+## Exercise 1 - scope
+
+What is the output of the following code? Explain why.
+
+```{r eval=FALSE}
+z = 1
+
+f = function(x, y, z) {
+  z = x+y
+
+  g = function(m = x, n = y) {
+    m/z + n/z
+  }
+
+  z * g()
+}
+
+f(1, 2, x = 3)
+```
+
+---
+
+## Operators as functions
+
+In R, operators are actually a special type of function - using backticks around the operator we can write them as functions.
+ 
+```{r}
+`+`
+typeof(`+`)
+```
+
+--
+
+.pad-top[]
+
+```{r}
+x = 4:1
+x + 2
+`+`(x, 2)
+```
+
+
+---
+
+## Getting Help
+
+Prefixing any function name with a `?` will open the related help file for that function.
+
+```{r, eval=FALSE}
+?`+`
+?sum
+```
+
+--
+
+For functions not in the base package, you can generally see their implementation by entering the function name without parentheses (or using the `body` function).
+
+```{r}
+lm
+```
+
+---
+
+## Less Helpful Examples
+
+```{r}
+list
+
+`[`
+
+sum
+
+`+`
+```
+
+
+
+---
+class: middle
+count: false
+
+# Loops
+
+---
+
+## for loops
+
+Simplest, and most common type of loop in R - given a vector iterate through the elements and evaluate the code block for each.
+
+
+```{r}
+is_even = function(x) {
+  res = c()
+  
+  for(val in x) {
+    res = c(res, val %% 2 == 0)
+  }
+  
+  res
+}
+
+is_even(1:10)
+```
+
+
+---
+
+## `while` loops
+
+Repeat until the given condition is **not** met (i.e. evaluates to `FALSE`)
+
+```{r}
+make_seq = function(from = 1, to = 1, by = 1) {
+  res = c(from)
+  cur = from
+  
+  while(cur+by <= to) {
+    cur = cur + by
+    res = c(res, cur)
+  }
+  
+  res
+}
+
+make_seq(1, 6)
+make_seq(1, 6, 2)
+```
+
+---
+
+## `repeat` loops
+
+Repeat the loop until a `break` is encountered
+
+```{r}
+make_seq2 = function(from = 1, to = 1, by = 1) {
+  res = c(from)
+  cur = from
+  
+  repeat {
+    cur = cur + by
+    
+    if (cur > to)
+      break
+    
+    res = c(res, cur)
+  }
+  
+  res
+}
+
+make_seq2(1, 6)
+make_seq2(1, 6, 2)
+```
+
+---
+class: split-50
+
+## Special keywords - `break` and `next`
+
+These are special actions that only work *inside* of a loop
+
+* `break` - ends the current **loop** (inner-most)
+* `next` - ends the current **iteration**
+
+.pull-left[
+```{r}
+f = function(x) {
+  res = c()
+  
+  for(i in x) {
+    if (i %% 2 == 0)
+      break
+    
+    res = c(res, i)
+  }
+  
+  res
+}
+
+f(1:10)
+f(c(1,1,1,2,2,3))
+```
+]
+
+.pull-right[
+```{r}
+g = function(x) {
+  res = c()
+  
+  for(i in x) {
+    if (i %% 2 == 0)
+      next
+  
+    res = c(res,i)
+  }
+  
+  res
+}
+
+g(1:10)
+g(c(1,1,1,2,2,3))
+```
+]
+
+
+---
+
+## Some helpful functions
+
+Often we want to use a loop across the indexes of an object and not the elements themselves. There are several useful functions to help you do this: `:`, `length`, `seq`, `seq_along`, `seq_len`, etc.
+
+.pull-left[
+```{r}
+4:7
+length(4:7)
+seq(4,7)
+```
+]
+
+.pull-right[
+```{r}
+seq_along(4:7)
+seq_len(length(4:7))
+seq(4,7,by=2)
+```
+]
+
+
+---
+
+## Avoid using `1:length(x)`
+
+A common loop construction you'll see in a lot of R code is using `1:length(x)` to generate a vector of index values for the vector `x`. 
+
+.pull-left[ .midi[
+```{r}
+f = function(x) {
+  for(i in 1:length(x)) {
+    print(i)
+  }
+}
+
+f(2:1)
+f(2)
+f(integer())
+```
+] ]
+
+.pull-right[
+```{r}
+g = function(x) {
+  for(i in seq_along(x)) {
+    print(i)
+  }
+}
+
+g(2:1)
+g(2)
+g(integer())
+```
+]
+
+--
+
+<div> 
+
+.pull-left[
+```{r}
+1:length(integer())
+```
+]
+.pull-right[
+```{r}
+seq_along(integer())
+```
+]
+
+</div>
+
+
+
+---
+
+## Exercise 2
+
+Below is a vector containing all prime numbers between 2 and 100:
+
+.center[
+```r
+primes = c( 2,  3,  5,  7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 
+      43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97)
+```
+]
+
+If you were given the vector `x = c(3,4,12,19,23,51,61,63,78)`, write the R code necessary to print only the values of `x` that are *not* prime (without using subsetting or the `%in%` operator). 
+
+Your code should use *nested* loops to iterate through the vector of primes and `x`.
+
+
+
+
+
+
+
+
+
+
+---
+class: middle center
+
+## Merge Conflict + GitHub Actions <br/> Live Demo

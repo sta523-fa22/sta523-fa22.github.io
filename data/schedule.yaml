@@ -1,0 +1,309 @@
+startdate: "2022-08-30"
+dateFormat: 'Mon, Jan 2'
+schedule:
+- week: 1
+  day: 0
+  lecture: "<i>No labs</i>"
+  slides:
+  screencast:
+  notes:
+
+- week: 1
+  day: 1
+  lecture: "Welcome & Syllabus"
+  slides:
+  screencast:
+  notes:
+
+- week: 1
+  day: 3
+  lecture: "Types and Control Flow in R"
+  slides:
+  screencast:
+  readings:
+  - text: Tidyverse style guide
+    link: https://style.tidyverse.org/
+  - text: Adv-R - Data Structures
+    link: http://adv-r.had.co.nz/Data-structures.html
+  notes: 
+
+
+- week: 2
+  day: 1
+  lecture: "NAs, functions, loops, and merge conflicts"
+  slides:
+  screencast:
+  readings:
+  - text: Happy Git and GitHub
+    link: http://happygitwithr.com/
+  notes:
+  
+- week: 2
+  day: 3
+  lecture: "Attributes & S3"
+  slides:
+  screencast:
+  readings:
+  - text: Adv R - OO Field Guide - S3
+    link: http://adv-r.had.co.nz/OO-essentials.html#s3
+  notes: 
+
+- week: 3
+  day: 1
+  lecture: "Data frames, matrices, & subsetting"
+  slides:
+  screencast:
+  readings:
+  - text: Adv-R - Subsetting
+    link: http://adv-r.had.co.nz/Subsetting.html
+  notes: 
+
+- week: 3
+  day: 3
+  lecture: "Tidy data & dplyr"
+  slides:
+  screencast:
+  notes:
+  readings:
+  - text: dplyr Vignette
+    link: https://dplyr.tidyverse.org/articles/dplyr.html
+  - text: R4DS - tidy data
+    link: http://r4ds.had.co.nz/tidy-data.html
+  - text: Data transformation cheatsheet
+    link: https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf
+  notes: 
+
+- week: 4
+  day: 1
+  lecture: "tidyr"
+  slides:
+  screencast:
+  readings:
+  - text: tidyr pivoting
+    link: https://tidyr.tidyverse.org/articles/pivot.html
+  - text: tidyr rectangling
+    link: https://tidyr.tidyverse.org/articles/rectangle.html
+  notes:
+
+- week: 4
+  day: 3
+  lecture: "Functional programming & purrr"
+  slides:
+  screencast:
+  readings:
+  - text: Purrr tutorial
+    link: https://jennybc.github.io/purrr-tutorial/index.html
+  - text: R4DS - Iteration
+    link: http://r4ds.had.co.nz/iteration.html
+  - text: purrr cheatsheet
+    link: https://github.com/rstudio/cheatsheets/raw/master/purrr.pdf
+  notes: 
+
+- week: 5
+  day: 1
+  lecture: "ggplot2"
+  slides:
+  screencast:
+  readings:
+  - text:  R4DS - Visualization
+    link: http://r4ds.had.co.nz/data-visualisation.html
+  - text: ggplot2 Reference
+    link: http://ggplot2.tidyverse.org/reference/index.html
+  notes: 
+
+- week: 5
+  day: 3
+  lecture: "Visualization Design"
+  slides:
+  screencast:
+  readings:
+  notes:
+
+- week: 6
+  day: 1
+  lecture: "Text processing & Regular expressions"
+  slides:
+  screencast:
+  readings:
+  - text: stringr Cheat Sheet, 
+    link: https://github.com/rstudio/cheatsheets/blob/master/strings.pdf
+  - text: stringr vignette
+    link: https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html
+  - text: R4DS - Strings
+    link: https://r4ds.had.co.nz/strings.html
+  notes: 
+
+- week: 6
+  day: 3
+  lecture: "Web scraping"
+  slides:
+  screencast:
+  readings:
+  - text: rvest - selector gadget vignette
+    link: https://rvest.tidyverse.org/articles/articles/selectorgadget.html
+  notes: 
+
+
+- week: 7
+  day: 0
+  lecture: "<i>No lab - Fall break</i>"
+
+- week: 7
+  day: 1
+  lecture: "TBD"
+
+- week: 7
+  day: 3
+  lecture: "Web APIs"
+  slides:
+  screencast:
+  readings:
+  - text: httr2
+    link: https://httr2.tidyverse.org/
+  - text: httr - Best practices for API packages
+    link: https://httr.r-lib.org/articles/api-packages.html
+
+- week: 8
+  day: 1
+  lecture: "filesystems, Dennys & LQ scraping"
+  screencast:
+  slides:
+  readings:
+  - text: Project-oriented workflow
+    link: https://rstats.wtf/project-oriented-workflow.html
+  notes: 
+
+- week: 8
+  day: 3
+  lecture: "make"
+  slides:
+  screencast:
+  readings:
+  - text: Minimal make
+    link: https://kbroman.org/minimal_make/
+  - text: Why use make
+    link: https://bost.ocks.org/mike/make/
+  notes: 
+
+- week: 9
+  day: 1
+  lecture: "Databases & SQL"
+  slides:
+  screencast:
+  readings:
+  - text: SQLite Syntax
+    link: https://www.sqlite.org/lang.html
+  - text: Modern SQL Style Guide
+    link: https://gist.github.com/mattmc3/38a85e6a4ca1093816c08d4815fbebfb
+  notes: 
+  
+
+- week: 9
+  day: 3
+  lecture: "SQL <--> dplyr"
+  slides:
+  screencast:
+  readings:
+  - text: SQL Translation
+    link: https://cran.r-project.org/web/packages/dbplyr/vignettes/sql-translation.html
+  - text: dbplyr Vignette
+    link: https://cran.r-project.org/web/packages/dbplyr/vignettes/dbplyr.html
+
+
+- week: 10
+  day: 1
+  lecture: "Shiny"
+  slides:
+  screencast:
+  readings:
+  - text: Shiny Docs & Gallery
+    link: http://shiny.rstudio.com/
+  - text: Widget Gallery
+    link: http://shiny.rstudio.com/gallery/widget-gallery.html
+  - text: Mastering Shiny
+    link: https://mastering-shiny.org/
+  notes: 
+
+- week: 10
+  day: 3
+  lecture: "Shiny - ABC"
+  screencast:
+  readings: ""
+  notes: 
+
+- week: 11
+  day: 1
+  lecture: "Profiling & Parallelization"
+  slides:
+  screencast:
+  readings:
+  - text: "parallel Vignettes"
+    link: https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf
+  - text: "furrr"
+    link: https://furrr.futureverse.org/
+  notes: 
+
+
+- week: 11
+  day: 3
+  lecture: "Spatial data"
+  slides:
+  screencast:
+  readings:
+  - text: "sf Vignettes"
+    link: https://cran.r-project.org/web/packages/sf/vignettes/
+  notes: 
+  
+- week: 12
+  day: 1
+  lecture: "Tidy Models"
+  screencast:
+  slides:
+  readings:
+  - text: "Tidy Models - Get Started"
+    link: https://www.tidymodels.org/start/
+  notes: 
+
+- week: 12
+  day: 3
+  lecture: "More Tidy Models"
+  screencast:
+  slides: 
+  notes: 
+
+- week: 13
+  day: 0
+  lecture: "<i>No labs</i>"
+
+- week: 13
+  day: 1
+  lecture: "<i>Thanksgiving break</i>"
+  
+- week: 13
+  day: 3
+  lecture: "<i>Thanksgiving break</i>"
+
+- week: 14
+  day: 1
+  lecture: "R Packages"
+  slides:
+  screencast:
+  readings:
+  - text: R Packages
+    link: https://r-pkgs.org/
+  - text: usethis
+    link: https://usethis.r-lib.org/
+  - text: Roxygen2
+    link: https://roxygen2.r-lib.org/
+  notes: 
+  
+- week: 14
+  day: 3
+  lecture: "More R Packages"
+  slides:
+  screencast:
+  readings:
+  - text: testthat
+    link: https://testthat.r-lib.org/
+  notes: 
+  

@@ -1,0 +1,927 @@
+---
+title: "Lec 02 - Logic and types in R"
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+
+---
+exclude: true
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+```
+
+
+---
+class: middle
+count: false
+
+# In R (almost) <br/> everything is a vector
+
+---
+
+## Vectors
+
+The fundamental building block of data in R are vectors (collections of related values, objects, data structures, functions, etc). 
+
+<br/>
+
+R has two types of vectors:
+
+* **atomic** vectors (*vectors*)
+
+    - homogeneous collections of the *same* type (e.g. all `true`/`false` values, all numbers, or all character strings).
+
+* **generic** vectors (*lists*)
+  
+    - heterogeneous collections of *any* type of R object, even other lists <br/> 
+    (meaning they can have a hierarchical/tree-like structure).
+
+---
+class: middle
+count: false
+
+# Atomic Vectors
+
+---
+
+## Atomic Vectors
+
+R has six atomic vector types, we can check the type of any object in R using the `typeof()` function
+
+`typeof()`  |  `mode()`     
+:-----------|:------------
+logical     |  logical    
+double      |  numeric    
+integer     |  numeric    
+character   |  character  
+complex     |  complex    
+raw         |  raw        
+
+Mode is a higher level abstraction, we will discuss this in detail a bit later.
+
+.footnote[
+There are additional types in R, e.g. generic vectors have type `list`, but more on these later. See `?typeof` for more information.
+]
+
+
+---
+
+## `logical` - boolean values (`TRUE` and `FALSE`)
+
+.pull-left[
+```{r}
+typeof(TRUE)
+typeof(FALSE)
+```
+]
+
+.pull-right[
+```{r}
+mode(TRUE)
+mode(FALSE)
+```
+]
+
+--
+
+<br/>
+
+R will let you use `T` and `F` as shortcuts to `TRUE` and `FALSE` is it a bad idea to use these as they are global variables that can be overwritter.
+
+```{r}
+T
+T = FALSE
+```
+
+```{r}
+T
+```
+
+---
+
+## `character` - text strings
+
+Either single or double quotes are fine, opening and closing quote must match.
+
+.pull-left[
+```{r}
+typeof("hello")
+typeof('world')
+```
+]
+
+.pull-right[
+```{r}
+mode("hello")
+mode('world')
+```
+]
+
+--
+
+<br/>
+
+Quote characters can be included by escaping or using a non-matching quote.
+
+```{r}
+"abc'123"
+'abc"123'
+"abc\"123"
+```
+
+.footnote[RStudio's syntax highlighting is helpful here to indicate where it thinks a string begins and ends.]
+
+
+---
+
+## Numeric types
+
+`double` - floating point values (default numerical type)
+
+.pull-left[
+```{r}
+typeof(1.33)
+typeof(7)
+```
+]
+
+.pull-right[
+```{r}
+mode(1.33)
+mode(7)
+```
+]
+
+--
+
+<br/>
+
+`integer` - integer values (literals are indicated with an `L` suffix)
+
+<div>
+
+.pull-left[
+```{r}
+typeof( 7L )
+typeof( 1:3 )
+```
+]
+
+.pull-right[
+```{r}
+mode( 7L )
+mode( 1:3 )
+```
+]
+
+</div>
+
+---
+
+## Concatenation
+
+Atomic vectors can be grown (combined) using the concatenate `c()` function.
+
+```{r}
+c(1, 2, 3)
+```
+
+--
+
+```{r}
+c("Hello", "World!")
+```
+
+--
+
+```{r}
+c(1, 1:10)
+```
+
+--
+
+```{r}
+c(1,c(2, c(3)))
+```
+
+.footnote[**Note** - atomic vectors are inherently flat.]
+
+---
+class: split-thirds
+
+## Inspecting types
+
+* `typeof(x)` - returns a character vector (length 1) of the *type* of object `x`.
+
+* `mode(x)` - returns a character vector (length 1) of the *mode* of object `x`.
+
+
+.pull-left[
+```{r}
+typeof(1)
+typeof(1L)
+typeof("A")
+typeof(TRUE)
+```
+]
+
+.pull-right[
+```{r}
+mode(1)
+mode(1L)
+mode("A")
+mode(TRUE)
+```
+]
+
+---
+
+## Type Predicates
+
+* `is.logical(x)`   - returns `TRUE` if `x` has *type* `logical`.
+* `is.character(x)` - returns `TRUE` if `x` has *type* `character`.
+* `is.double(x)`    - returns `TRUE` if `x` has *type* `double`.
+* `is.integer(x)`   - returns `TRUE` if `x` has *type* `integer`.
+* `is.numeric(x)`   - returns `TRUE` if `x` has *mode* `numeric`.
+
+.col3_left[
+```{r}
+is.integer(1)
+is.integer(1L)
+is.integer(3:7)
+```
+]
+
+.col3_mid[
+```{r}
+is.double(1)
+is.double(1L)
+is.double(3:8)
+```
+]
+
+.col3_right[
+```{r}
+is.numeric(1)
+is.numeric(1L)
+is.numeric(3:7)
+```
+]
+
+
+---
+
+## Other useful predicates
+
+* `is.atomic(x)` - returns `TRUE` if `x` is an *atomic vector*.
+* `is.list(x)` - returns `TRUE` if `x` is a *list*.
+* `is.vector(x)` - returns `TRUE` if `x` is either an *atomic vector* or *list*.
+
+.pull-left[
+```{r}
+is.atomic(c(1,2,3))
+is.list(c(1,2,3))
+is.vector(c(1,2,3))
+```
+]
+
+.pull-right[
+```{r}
+is.atomic(list(1,2,3))
+is.list(list(1,2,3))
+is.vector(list(1,2,3))
+```
+]
+
+
+---
+
+## Type Coercion
+
+R is a dynamically typed language -- it will automatically convert between most types without raising warnings or errors. Keep in mind the rule that atomic vectors must always contain values of the same type.
+
+```{r}
+c(1, "Hello")
+```
+
+--
+
+.top-pad[]
+
+```{r}
+c(FALSE, 3L)
+```
+
+--
+
+.top-pad[]
+
+```{r}
+c(1.2, 3L)
+```
+
+---
+
+## Operator coercion
+
+Operators and functions will also attempt to coerce values to an appropriate type for the given operation
+
+<div>
+.pull-left[
+```{r}
+3.1+1L
+5 + FALSE
+```
+]
+
+.pull-right[
+```{r}
+log(1)
+log(TRUE)
+```
+]
+</div>
+
+--
+
+<br/><br/>
+
+.pull-left[
+```{r}
+TRUE & FALSE
+TRUE & 7
+```
+]
+
+.pull-right[
+```{r}
+TRUE | FALSE
+FALSE | !5
+```
+]
+
+
+---
+
+## Explicit Coercion
+
+Most of the `is` functions we just saw have an `as` variant which can be used for *explicit* coercion.
+
+.pull-left[
+```{r}
+as.logical(5.2)
+as.character(TRUE)
+as.integer(pi)
+```
+]
+
+.pull-right[
+```{r}
+as.numeric(FALSE)
+as.double("7.2")
+as.double("one")
+```
+]
+
+---
+
+## Exercise 1
+
+**Part 1**
+
+What is the type of the following vectors? Explain why they have that type.
+
+* `c(1, NA+1L, "C")`
+* `c(1L / 0, NA)`
+* `c(1:3, 5)`
+* `c(3L, NaN+1L)`
+* `c(NA, TRUE)`
+
+
+**Part 2**
+
+Considering only the four (common) data types, what is R's implicit type conversion hierarchy (from highest priority to lowest priority)? 
+
+.footnote[*Hint* - think about the pairwise interactions between types.]
+
+---
+count: false
+class: middle
+
+# Conditionals & Control Flow
+
+---
+
+## Logical (boolean) operators
+
+<br/><br/>
+
+|  Operator                     |  Operation    |  Vectorized? 
+|:-----------------------------:|:-------------:|:------------:
+| <code>x &#124; y</code>       |  or           |   Yes        
+| `x & y`                       |  and          |   Yes        
+| `!x`                          |  not          |   Yes        
+| <code>x &#124;&#124; y</code> |  or           |   No         
+| `x && y`                      |  and          |   No         
+|`xor(x, y)`                    |  exclusive or |   Yes        
+
+
+---
+
+## Vectorized?
+
+```{r}
+x = c(TRUE,FALSE,TRUE)
+y = c(FALSE,TRUE,TRUE)
+```
+
+
+
+--
+
+.pull-left[
+```{r}
+x | y
+x & y
+```
+]
+
+--
+
+.pull-right[
+```{r}
+x || y
+x && y
+```
+]
+
+.footnote[
+**Note** both `||` and `&&` only use the *first* value in the vector, all other values are ignored, there is no warning about the ignored values.
+]
+---
+
+## Vectorization and math
+
+Almost all of the basic mathematical operations (and many other functions) in R are vectorized.
+
+.pull-left[
+```{r}
+c(1, 2, 3) + c(3, 2, 1)
+c(1, 2, 3) / c(3, 2, 1)
+```
+]
+
+--
+
+.pull-right[
+```{r}
+log(c(1, 3, 0))
+sin(c(1, 2, 3))
+```
+]
+
+---
+
+## Length coercion
+
+```{r}
+x = c(TRUE, FALSE, TRUE)
+y = c(TRUE)
+z = c(FALSE, TRUE)
+```
+
+--
+
+
+
+.pull-left[
+```{r}
+x | y
+x & y
+```
+]
+
+.pull-right[
+```{r}
+y | z
+y & z
+```
+]
+
+<div/>
+
+--
+
+<br/>
+
+
+
+```{r}
+x | z
+```
+
+---
+
+## Length coercion and math
+
+The same length coercion rules apply for most basic mathematical operators as well
+
+```{r}
+x = c(1, 2, 3)
+y = c(5, 4)
+z = 10L
+```
+
+.pull-left[
+```{r}
+x + x
+x + z
+```
+]
+
+--
+
+.pull-right[
+```{r}
+log(x)
+y / z
+```
+]
+
+--
+
+<br/>
+
+
+
+```{r}
+x %% y
+```
+
+
+---
+
+## Comparison operators
+
+  Operator  |  Comparison                |  Vectorized?
+:----------:|:--------------------------:|:----------------:
+ `x < y`    |  less than                 |  Yes
+ `x > y`    |  greater than              |  Yes
+ `x <= y`   |  less than or equal to     |  Yes
+ `x >= y`   |  greater than or equal to  |  Yes
+ `x != y`   |  not equal to              |  Yes
+ `x == y`   |  equal to                  |  Yes
+ `x %in% y` |  contains                  |  Yes (over `x`)
+
+.footnote[over `x` here means the returned value will have the same length as `x`]
+
+---
+
+## Comparisons
+
+```{r}
+x = c("A","B","C")
+z = c("A")
+```
+
+
+
+.pull-left[
+```{r}
+x == z
+x != z
+x > z
+```
+]
+
+--
+
+.pull-right[
+```{r}
+x %in% z
+z %in% x
+```
+]
+ 
+
+---
+
+## Conditional Control Flow
+
+Conditional execution of code blocks is achieved via `if` statements. 
+
+```{r}
+x = c(1, 3)
+```
+
+--
+
+```{r}
+if (3 %in% x)
+  print("Contains 3!")
+```
+
+--
+
+```{r}
+if (1 %in% x)
+  print("Contains 1!")
+```
+
+--
+
+```{r}
+if (5 %in% x)
+  print("Contains 5!")
+```
+
+--
+
+```{r}
+if (5 %in% x) {
+  print("Contains 5!")
+} else {
+  print("Does not contain 5!")
+}
+```
+
+
+
+
+---
+
+## `if` is not vectorized
+
+```{r}
+x = c(1, 3)
+```
+
+--
+
+```{r}
+if (x == 1)
+  print("x is 1!")
+```
+
+--
+
+<br/>
+
+```{r}
+if (x == 3)
+  print("x is 3!")
+```
+
+---
+
+## Collapsing logical vectors
+
+There are a couple of helper functions for collapsing a logical vector down to a single value: `any`, `all`
+
+```{r}
+x = c(3,4,1)
+```
+
+.top-pad[]
+
+.pull-left[
+```{r}
+x >= 2
+any(x >= 2)
+all(x >= 2)
+```
+]
+
+.pull-right[
+```{r}
+x <= 4
+any(x <= 4)
+all(x <= 4)
+```
+]
+
+<div/>
+
+--
+
+<br/>
+
+```{r}
+if (any(x == 3)) 
+  print("x contains 3!")
+```
+
+---
+
+## `else if` and `else`
+
+.pull-left[
+```{r}
+x = 3
+
+if (x < 0) {
+  "x is negative"
+} else if (x > 0) {
+  "x is positive"
+} else {
+  "x is zero"
+}
+```
+]
+
+.pull-right[
+```{r}
+x = 0
+
+if (x < 0) {
+  "x is negative"
+} else if (x > 0) {
+  "x is positive"
+} else {
+  "x is zero"
+}
+```
+]
+
+---
+
+## `if` and `return`
+
+If R conditional statements can return a value, the two following implementations are equivalent.
+
+.pull-left[
+```{r}
+x = 5
+```
+
+```{r}
+s = if (x %% 2 == 0) {
+  x / 2
+} else {
+  3*x + 1
+}
+```
+
+```{r}
+s
+```
+]
+
+.pull-right[
+```{r}
+x = 5
+```
+
+```{r}
+if (x %% 2 == 0) {
+  s = x / 2
+} else {
+  s = 3*x + 1
+}
+```
+
+```{r}
+s
+```
+]
+
+.footnote[
+Notice that conditional expressions are evaluated in the parent scope.
+]
+
+---
+
+## Exercise 2
+
+Take a look at the following code, without running it in R,
+
+```r
+f = function(x) {
+  # Check small prime
+  if (x > 10 || x < -10) {
+    stop("Input too big")
+  } else if (x %in% c(2, 3, 5, 7)) {
+    cat("Input is prime!\n")
+  } else if (x %% 2 == 0) {
+    cat("Input is even!\n")
+  } else if (x %% 2 == 1) {
+    cat("Input is odd!\n")
+  }
+}
+```
+
+what do you expect the outcome will be for each of the following
+```r
+f(1)
+f(3)
+f(8)
+f(-1)
+f(-3)
+f(1:2)
+f("0")
+f("3")
+f("zero")
+```
+
+.footnote[More on functions next time]
+
+
+---
+
+class: middle
+count: false
+
+# Error Checking
+
+---
+
+## `stop` and `stopifnot`
+
+Often we want to validate user input or function arguments - if our assumptions are not met then we often want to report the error and stop execution. 
+
+```{r error=TRUE}
+ok = FALSE
+```
+
+```{r error=TRUE}
+if (!ok)
+  stop("Things are not ok.")
+```
+
+```{r error=TRUE}
+stopifnot(ok)
+```
+
+.footnote[*Note* - an error (like the one generated by `stop`) will prevent an RMarkdown document from compiling unless `error = TRUE` is set for that code chunk]
+
+---
+
+## Style choices
+
+.pull-left[
+Do stuff:
+```{r eval=FALSE}
+if (condition_one) {
+  ##
+  ## Do stuff
+  ##
+} else if (condition_two) {
+  ##
+  ## Do other stuff
+  ##
+} else if (condition_error) {
+  stop("Condition error occured")
+}
+```
+]
+
+.pull-right[
+Do stuff (better):
+```{r eval=FALSE}
+# Do stuff better
+if (condition_error) {
+  stop("Condition error occured")
+}
+
+if (condition_one) {
+  ##
+  ## Do stuff
+  ##
+} else if (condition_two) {
+  ##
+  ## Do other stuff
+  ##
+}
+```
+]
+
+---
+
+## Exercise 3
+
+Write a set of conditional(s) that satisfies the following requirements,
+
+* If `x` is greater than 3 and `y` is less than or equal to 3 then print "Hello world!"
+
+* Otherwise if `x` is greater than 3 print "!dlrow olleH"
+
+* If `x` is less than or equal to 3 then print "Something else ..."
+
+* Stop execution if x is odd and y is even and report an error, don't print any of the text strings above.
+
+
+Test out your code by trying various values of `x` and `y`.

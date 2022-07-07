@@ -1,0 +1,674 @@
+---
+title: Profiling & Parallelization
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+exclude: true
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width = 80,
+  tibble.width = 80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center"
+)
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+```
+
+```{r setup, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(parallel)
+library(foreach)
+library(doMC)
+library(purrr)
+
+ggplot2::theme_set(theme_bw())
+```
+
+---
+class: middle
+count: false
+
+# Profiling & Benchmarking
+
+---
+
+## profvis demo
+
+```{r eval=FALSE}
+n = 1e6
+
+d = tibble(
+  x1 = rt(n, df = 3),
+  x2 = rt(n, df = 3),
+  x3 = rt(n, df = 3),
+  x4 = rt(n, df = 3),
+  x5 = rt(n, df = 3),
+) %>%
+  mutate(y = -2*x1 - 1*x2 + 0*x3 + 1*x4 + 2*x5 + rnorm(n))
+
+profvis::profvis(lm(y~., data=d))
+```
+
+---
+
+## Benchmarking - `bench`
+
+```{r}
+d = tibble(
+  x = runif(10000),
+  y=runif(10000)
+)
+
+(b = bench::mark(
+  d[d$x > 0.5, ],
+  d[which(d$x > 0.5), ],
+  subset(d, x > 0.5),
+  filter(d, x > 0.5)
+))
+```
+
+---
+
+## `bench` - relative results
+
+```{r}
+summary(b, relative=TRUE)
+```
+
+---
+class: middle
+count: false
+
+# Parallelization
+
+---
+
+## `parallel`
+
+Part of the base packages in R 
+
+* tools for the forking of R processes (some functions do not work on Windows)
+
+* Core functions:
+    
+    * `detectCores`
+
+    * `pvec`
+
+    * `mclapply`
+
+    * `mcparallel` & `mccollect`
+
+
+---
+
+## `detectCores`
+
+Surprisingly, detects the number of cores of the current system.
+
+```{r eval=FALSE}
+detectCores()
+
+## [1] 16
+```
+
+---
+
+## pvec
+
+Parallelization of a vectorized function call
+
+```{r eval=FALSE}
+system.time(pvec(1:1e7, sqrt, mc.cores = 1))
+
+##   user  system elapsed 
+##  0.214   0.029   0.243 
+
+system.time(pvec(1:1e7, sqrt, mc.cores = 4))
+
+##   user  system elapsed 
+##  0.442   0.185   0.631 
+
+system.time(pvec(1:1e7, sqrt, mc.cores = 8))
+
+##   user  system elapsed 
+##  0.532   0.389   0.372 
+```
+
+---
+
+## pvec - `bench::system_time`
+
+
+```{r eval=FALSE}
+bench::system_time(pvec(1:1e7, sqrt, mc.cores = 1))
+
+##  process    real 
+##    180ms   180ms 
+
+bench::system_time(pvec(1:1e7, sqrt, mc.cores = 4))
+
+##  process    real 
+##    935ms   980ms 
+
+bench::system_time(pvec(1:1e7, sqrt, mc.cores = 8))
+
+##  process    real 
+##    1.01s   1.05s 
+```
+
+--
+
+```{r eval=FALSE}
+bench::system_time(Sys.sleep(.5))
+
+##  process     real 
+##   1.93ms 500.09ms 
+
+system.time(Sys.sleep(.5))
+
+##   user  system elapsed 
+##  0.001   0.000   0.500 
+```
+
+---
+
+```{r eval=FALSE}
+cores = c(1,4,8,16)
+order = 6:8
+f = function(x,y) {
+  system.time(
+    pvec(1:(10^y), sqrt, mc.cores = x)
+  )[3]
+}
+
+res = map(
+  cores, 
+  function(x) {
+     map_dbl(order, f, x = x)
+  }
+) %>% 
+  do.call(rbind, .)
+
+rownames(res) = paste0(cores," cores")
+colnames(res) = paste0("10^",order)
+
+res
+
+##            10^6  10^7  10^8
+##  1 cores  0.011 0.133 1.662
+##  4 cores  0.059 0.360 4.664
+##  8 cores  0.072 0.372 3.971
+##  16 cores 0.098 0.432 3.979
+```
+
+---
+
+## mclapply
+
+Parallelized version of `lapply`
+
+```{r eval=FALSE}
+system.time(rnorm(1e6))
+
+##   user  system elapsed 
+##  0.101   0.007   0.107 
+
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 2)))
+
+##   user  system elapsed 
+##  0.148   0.136   0.106 
+
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 4)))
+
+##   user  system elapsed 
+##  0.242   0.061   0.052
+```
+
+---
+
+```{r eval=FALSE}
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 4)))
+
+##   user  system elapsed 
+##  0.097   0.047   0.079 
+
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 8)))
+
+##   user  system elapsed 
+##  0.193   0.076   0.040 
+
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 10)))
+
+##   user  system elapsed 
+##  0.162   0.083   0.041 
+
+system.time(unlist(mclapply(1:10, function(x) rnorm(1e5), mc.cores = 12)))
+
+##   user  system elapsed 
+##  0.098   0.065   0.037 
+```
+
+
+---
+
+## mcparallel
+
+Asynchronously evaluation of an R expression in a separate process
+
+```{r}
+m = mcparallel(rnorm(1e6))
+n = mcparallel(rbeta(1e6,1,1))
+o = mcparallel(rgamma(1e6,1,1))
+
+str(m)
+str(n)
+```
+
+
+---
+
+## mccollect
+
+Checks `mcparallel` objects for completion
+
+```{r}
+str(mccollect(list(m,n,o)))
+```
+
+---
+
+## mccollect - waiting
+
+```{r}
+p = mcparallel(mean(rnorm(1e5)))
+mccollect(p, wait = FALSE, 10) # will retrieve the result (since it's fast)
+mccollect(p, wait = FALSE)     # will signal the job as terminating
+mccollect(p, wait = FALSE)     # there is no longer such a job
+```
+
+
+---
+class: middle
+count: false
+
+# doMC & foreach
+
+---
+
+## doMC & foreach
+
+Packages by Revolution Analytics that provides the `foreach` function which is a parallelizable `for` loop (and then some).
+
+* Core functions:
+    
+    * `registerDoMC`
+
+    * `foreach`, `%dopar%`, `%do%`
+
+---
+
+## `registerDoMC` 
+
+Primarily used to set the number of cores used by `foreach`, by default uses `options("cores")` or half the number of cores found by `detectCores` from the parallel package.
+
+```{r eval=FALSE}
+options("cores")
+
+## $cores
+## NULL
+
+detectCores()
+
+## [1] 16
+
+getDoParWorkers()
+
+## [1] 1
+
+registerDoMC(4)
+getDoParWorkers()
+
+## [1] 4
+```
+
+---
+
+## `foreach`
+
+A slightly more powerful version of base `for` loops (think `for` with an `lapply` flavor). Combined with `%do%` or `%dopar%` for single or multicore execution.
+
+```{r}
+for(i in 1:10) {
+  sqrt(i)
+}
+
+foreach(i = 1:5) %do% {
+  sqrt(i)   
+}
+```
+
+
+---
+
+## `foreach` - iterators
+
+`foreach` can iterate across more than one value, but it doesn't do length coercion
+
+.pull-left[
+```{r}
+foreach(i = 1:5, j = 1:5) %do% {
+  sqrt(i^2+j^2)   
+}
+```
+]
+
+.pull-right[
+```{r}
+foreach(i = 1:5, j = 1:2) %do% {
+  sqrt(i^2+j^2)   
+}
+```
+]
+
+---
+
+## `foreach` - combining results
+
+```{r}
+foreach(i = 1:5, .combine='c') %do% {
+  sqrt(i)
+}
+foreach(i = 1:5, .combine='cbind') %do% {
+  sqrt(i)
+}
+foreach(i = 1:5, .combine='+') %do% {
+  sqrt(i)
+}
+```
+
+---
+
+## `foreach` - parallelization
+
+Swapping out `%do%` for `%dopar%` will use the parallel backend.
+
+```{r}
+registerDoMC(4)
+```
+
+```{r}
+system.time(foreach(i = 1:10) %dopar% mean(rnorm(1e6)))
+registerDoMC(8)
+system.time(foreach(i = 1:10) %dopar% mean(rnorm(1e6)))
+registerDoMC(12)
+system.time(foreach(i = 1:10) %dopar% mean(rnorm(1e6)))
+```
+
+---
+class: middle
+
+```{r echo=FALSE, out.width="50%", fig.align="center"}
+knitr::include_graphics("imgs/hex-furrr.png")
+```
+
+
+--- 
+
+## furrr / future
+
+```{r eval=FALSE}
+system.time( purrr::map(c(2,2,2), Sys.sleep) )
+
+##  user  system elapsed 
+##  0.032   0.024   6.004 
+
+system.time( furrr::future_map(c(2,2,2), Sys.sleep) )
+
+##   user  system elapsed 
+##  0.110   0.028   6.066 
+
+future::plan(future::multisession) # See also future::multicore
+system.time( furrr::future_map(c(2,2,2), Sys.sleep) )
+
+##   user  system elapsed 
+##  0.075   0.010   2.395 
+```
+
+---
+
+## Example - Bootstraping
+
+Bootstrapping is a resampling scheme where the original data is repeatedly reconstructed by taking a samples of size *n* (with replacement) from the original data, and using that to repeat an analysis procedure of interest. Below is an example of fitting a local regression (`loess`) to some synthetic data, we will construct a bootstrap prediction interval for this model.
+
+--
+
+```{r}
+set.seed(3212016)
+d = data.frame(x = 1:120) %>%
+    mutate(y = sin(2*pi*x/120) + runif(length(x),-1,1))
+
+l = loess(y ~ x, data=d)
+p = predict(l, se=TRUE)
+
+d = d %>% mutate(
+  pred_y = p$fit,
+  pred_y_se = p$se.fit
+)
+```
+
+---
+
+```{r fig.align="center", fig.width=9, fig.height=6}
+ggplot(d, aes(x,y)) +
+  geom_point(color="gray50") +
+  geom_ribbon(
+    aes(ymin = pred_y - 1.96 * pred_y_se, 
+        ymax = pred_y + 1.96 * pred_y_se), 
+    fill="red", alpha=0.25
+  ) +
+  geom_line(aes(y=pred_y)) +
+  theme_bw()
+```
+
+
+
+---
+
+## What to use when?
+
+Optimal use of multiple cores is hard, there isn't one best solution
+
+* Don't underestimate the overhead cost
+
+* Experimentation is key
+
+* Measure it or it didn't happen
+
+* Be aware of the trade off between developer time and run time
+
+
+---
+class: middle
+count: false
+
+# BLAS and LAPACK
+
+---
+
+## Statistics and Linear Algebra
+
+An awful lot of statistics is at its core linear algebra.
+
+<br/>
+
+For example:
+
+* Linear regession models, find
+
+$$ \hat{\beta} = (X^T X)^{-1} X^Ty $$
+
+* Principle component analysis
+
+    * Find $T = XW$ where $W$ is a matrix whose columns are the eigenvectors of $X^TX$.
+    
+    * Often solved via SVD - Let $X = U\Sigma W^T$ then $T = U\Sigma$.
+
+
+---
+
+## Numerical Linear Algebra
+
+Not unique to Statistics, these are the type of problems that come up across all areas of numerical computing.
+
+* Numerical linear algebra $\ne$ mathematical linear algebra
+
+<br/>
+
+* Efficiency and stability of numerical algorithms matter
+
+    * Designing and implementing these algorithms is hard
+
+<br/>
+
+* Don't reinvent the wheel - common core linear algebra tools (well defined API)
+
+
+
+---
+
+## BLAS and LAPACK
+
+Low level algorithms for common linear algebra operations
+
+<br/>
+
+BLAS
+
+* **B**asic **L**inear **A**lgebra **S**ubprograms
+
+* Copying, scaling, multiplying vectors and matrices
+
+* Origins go back to 1979, written in Fortran
+
+LAPACK
+
+* **L**inear **A**lgebra **Pack**age
+
+* Higher level functionality building on BLAS.
+
+* Linear solvers, eigenvalues, and matrix decompositions
+
+* Origins go back to 1992, mostly Fortran (expanded on LINPACK, EISPACK)
+
+
+---
+
+## Modern variants?
+
+Most default BLAS and LAPACK implementations (like R's defaults) are somewhat dated
+
+* Written in Fortran and designed for a single cpu core  
+
+* Certain (potentially non-optimal) hard coded defaults (e.g. block size).
+
+Multithreaded alternatives:
+
+* ATLAS - Automatically Tuned Linear Algebra Software
+
+* OpenBLAS - fork of GotoBLAS from TACC at UTexas
+
+* Intel MKL - Math Kernel Library, part of Intel's commercial compiler tools
+
+* cuBLAS / Magma - GPU libraries from Nvidia and UTK respectively
+
+
+---
+
+## OpenBLAS  Matrix Multiply (DGEMM) Performance
+
+```{r, eval=FALSE, include=FALSE}
+library(RhpcBLASctl)
+x=matrix(runif(5000^2),ncol=5000)
+
+sizes = c(100,500,1000,2000,3000,4000,5000)
+cores = c(1,2,4,8)
+
+sapply(
+  cores, 
+  function(n_cores) 
+  {
+    blas_set_num_threads(n_cores)
+    sapply(
+      sizes, 
+      function(s) 
+      {
+           y = x[1:s,1:s]
+           system.time(y %*% y)[3]
+      }
+    )
+  }
+)
+```
+
+|  n   | 1 core | 2 cores | 4 cores | 8 cores |
+|------|--------|---------|---------|---------|
+| 100  |  0.001 | 0.001   | 0.000   | 0.000   |
+| 500  |  0.018 | 0.011   | 0.008   | 0.008   |
+| 1000 |  0.128 | 0.068   | 0.041   | 0.036   |
+| 2000 |  0.930 | 0.491   | 0.276   | 0.162   |
+| 3000 |  3.112 | 1.604   | 0.897   | 0.489   |
+| 4000 |  7.330 | 3.732   | 1.973   | 1.188   |
+| 5000 | 14.223 | 7.341   | 3.856   | 2.310   |
+
+---
+
+```{r echo=FALSE, fig.width=8, out.width="66%", message=FALSE}
+d = tribble(
+  ~"n",  ~"1 core", ~"2 cores", ~"4 cores", ~"8 cores", ~"K20X (GPU)", ~"P100 (GPU)",
+  500,  0.018,  0.011, 0.008, 0.008, NA     , NA     ,
+  1000, 0.128,  0.068, 0.041, 0.036, 0.00598, 0.00072,
+  2000, 0.930,  0.491, 0.276, 0.162, 0.01733, 0.00471,
+  3000, 3.112,  1.604, 0.897, 0.489, 0.05417, 0.01382,
+  4000, 7.330,  3.732, 1.973, 1.188, 0.12554, 0.03243,
+  5000, 14.223, 7.341, 3.856, 2.310, 0.24091, 0.06228
+)
+
+
+d %>% 
+  gather(cores,time,-n) %>%
+  ggplot(aes(x=n, y=time, color=cores)) +
+    geom_point(na.rm=TRUE) +
+    geom_line(na.rm=TRUE) +
+    labs(y="time (s)", title = "Matrix Multiply of (n x n) matrices - double precision")
+```
+
+---
+
+```{r echo=FALSE, fig.width=8, out.width="66%", message=FALSE}
+d %>% 
+  gather(cores,time,-n) %>%
+  ggplot(aes(x=n, y=time, color=cores)) +
+    geom_point(na.rm=TRUE) +
+    geom_line(na.rm=TRUE) +
+    scale_y_log10() +
+    labs(y="time (s)", title = "Matrix Multiply of (n x n) matrices - double precision")
+```
+

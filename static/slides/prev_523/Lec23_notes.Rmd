@@ -1,0 +1,344 @@
+---
+output: html_document
+---
+
+## Setup
+
+```{r setup, message = FALSE}
+library(tidyverse)
+library(tidymodels)
+```
+
+Orig data from Antonio, Almeida, and Nunes (2019) 
+- https://doi.org/10.1016/j.dib.2018.11.126
+- Data dictionary 
+  - https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-02-11#data-dictionary
+
+## Data basics
+
+```{r}
+hotels = read_csv(
+  'https://tidymodels.org/start/case-study/hotels.csv'
+) %>%
+  mutate(
+    across(where(is.character), as.factor)
+  )
+```
+
+```{r}
+glimpse(hotels)
+```
+
+```{r}
+hotels %>%
+  count(children) %>%
+  mutate(prop = n/sum(n))
+```
+
+### Test train split
+
+```{r}
+set.seed(123)
+
+splits = initial_split(hotels, strata = children)
+
+hotel_train = training(splits)
+hotel_test = testing(splits)
+```
+
+
+#### Checking on strata split
+
+```{r}
+hotel_train %>%
+  count(children) %>%
+  mutate(prop = n/sum(n))
+
+
+hotel_test %>%
+  count(children) %>%
+  mutate(prop = n/sum(n))
+```
+
+#### Creating the validation set
+
+```{r}
+set.seed(1234)
+val_set = validation_split(hotel_train, strata = children, prop = 0.8)
+val_set
+```
+
+
+## Logistic Regression model
+
+```{r}
+show_engines("logistic_reg")
+```
+
+```{r}
+lr_model = logistic_reg() %>%
+  set_engine("glm")
+
+lr_model %>%
+  translate()
+```
+
+#### Recipe
+
+```{r}
+holidays = c("AllSouls", "AshWednesday", "ChristmasEve", "Easter", 
+              "ChristmasDay", "GoodFriday", "NewYearsDay", "PalmSunday")
+
+lr_recipe = recipe(children ~ ., data = hotel_train) %>% 
+  step_date(arrival_date) %>% 
+  step_holiday(arrival_date, holidays = holidays) %>% 
+  step_rm(arrival_date) %>% 
+  step_rm(country) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors())
+
+lr_recipe
+```
+
+```{r}
+lr_recipe %>%
+  prep() %>%
+  bake(new_data = hotel_train)
+```
+
+#### Workflow
+
+```{r}
+lr_workflow = workflow() %>%
+  add_model(lr_model) %>%
+  add_recipe(lr_recipe)
+```
+
+#### Fit
+
+```{r}
+lr_fit = lr_workflow %>%
+  fit(data = hotel_train)
+
+lr_fit
+
+# collect_metrics(lr_fit)
+
+lr_perf = lr_fit %>%
+  augment(new_data = hotel_train) %>%
+  select(children, starts_with(".pred"))
+
+
+lr_perf %>%
+  yardstick::roc_curve(
+    children,
+    .pred_children
+  ) %>%
+  autoplot()
+
+lr_perf %>%
+  roc_auc(children, .pred_children)
+
+lr_perf %>%
+  precision(children, .pred_class)
+
+lr_perf %>%
+  conf_mat(children, .pred_class)
+```
+
+#### Using validation split
+
+```{r}
+lr_val_fit = lr_workflow %>%
+  fit_resamples(val_set)
+
+lr_val_fit
+collect_metrics(lr_val_fit)
+```
+
+
+
+## Fitting a lasso model
+
+For the mixture argument `1` -> Lasso, `0` -> Ridge, other -> elastic net.
+
+```{r}
+lasso_model = logistic_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet")
+
+lasso_model %>%
+  translate()
+
+lasso_model %>% 
+  parameters()
+```
+
+```{r}
+lasso_recipe = recipe(children ~ ., data = hotel_train) %>% 
+  step_date(arrival_date) %>% 
+  step_holiday(arrival_date, holidays = holidays) %>% 
+  step_rm(arrival_date) %>% 
+  step_rm(country) %>%
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors()) %>%
+  step_normalize(all_predictors())
+
+lasso_recipe %>%
+  prep() %>%
+  bake(new_data = hotel_train)
+```
+
+```{r}
+lasso_workflow = workflow() %>%
+  add_model(lasso_model) %>%
+  add_recipe(lasso_recipe)
+```
+
+#### Tuning the model
+
+```{r}
+
+```
+
+```{r}
+lasso_res = lasso_workflow %>%
+  tune_grid(
+    val_set,
+    grid = tibble(
+      penalty = 10^seq(-4, -1, length.out = 30)
+    ),
+    control = control_grid(save_pred = TRUE),
+    metrics = metric_set(roc_auc)
+  )
+```
+
+```{r}
+lasso_res
+lasso_res %>%
+  collect_metrics()
+```
+
+```{r}
+lasso_res %>% 
+  collect_metrics() %>% 
+  ggplot(aes(x = penalty, y = mean)) + 
+    geom_point() + 
+    geom_line() + 
+    ylab("Area under the ROC Curve") +
+    scale_x_log10(labels = scales::label_number())
+```
+
+```{r}
+lasso_res %>%
+  show_best("roc_auc", n=10)
+```
+
+```{r}
+lasso_best = lasso_res %>%
+  collect_metrics() %>%
+  mutate(mean = round(mean, 2)) %>%
+  arrange(desc(mean), desc(penalty)) %>%
+  slice(1)
+
+lasso_best
+```
+
+```{r}
+lasso_best_pred = lasso_res %>%
+  collect_predictions(parameters = lasso_best)
+
+lasso_best_pred %>%
+  roc_curve(children, .pred_children) %>%
+  autoplot()
+```
+
+## Comparing models
+
+```{r}
+lr_val_fit = lr_workflow %>%
+  fit_resamples(
+    val_set,
+    control = control_resamples(save_pred=TRUE)
+  )
+
+
+
+bind_rows(
+  lr_val_fit %>%
+    collect_predictions() %>%
+    roc_curve(children, .pred_children) %>% 
+    mutate(model = "glm"),
+  lasso_best_pred %>%
+    roc_curve(children, .pred_children) %>%
+    mutate(model = "Lasso (glmnet)")
+) %>%
+  ggplot(aes(x=1-specificity, y=sensitivity, col=model)) +
+    geom_path() + 
+    geom_abline(lty = 3) +
+    coord_equal()
+```
+
+## Random Forest
+
+```{r}
+rf_model = rand_forest(mtry = tune(), min_n = tune(), trees = 100) %>% 
+  set_engine("ranger", num.threads = 4) %>% 
+  set_mode("classification")
+
+rf_recipe = recipe(children ~ ., data = hotel_train) %>% 
+  step_date(arrival_date) %>% 
+  step_holiday(arrival_date) %>% 
+  step_rm(arrival_date)
+
+rf_workflow = workflow() %>% 
+  add_model(rf_model) %>% 
+  add_recipe(rf_recipe)
+
+rf_model %>%
+  parameters()
+
+rf_res = rf_workflow %>% 
+  tune_grid(
+    val_set,
+    grid = 25,
+    control = control_grid(save_pred = TRUE),
+    metrics = metric_set(roc_auc)
+  )
+```
+
+```{r}
+rf_res %>% 
+  show_best(metric = "roc_auc")
+
+autoplot(rf_res)
+```
+
+```{r}
+rf_best = rf_res %>%
+  select_best(metric = "roc_auc")
+
+rf_best_pred = rf_res %>%
+  collect_predictions(parameters = rf_best)
+```
+
+## Compare
+
+```{r}
+
+bind_rows(
+  lr_val_fit %>%
+    collect_predictions() %>%
+    roc_curve(children, .pred_children) %>% 
+    mutate(model = "glm"),
+  lasso_best_pred %>%
+    roc_curve(children, .pred_children) %>%
+    mutate(model = "Lasso (glmnet)"),
+  rf_best_pred %>% 
+    roc_curve(children, .pred_children) %>%
+    mutate(model = "Random Forest (ranger)")
+) %>%
+  ggplot(aes(x=1-specificity, y=sensitivity, col=model)) +
+    geom_path() + 
+    geom_abline(lty = 3) +
+    coord_equal()
+```

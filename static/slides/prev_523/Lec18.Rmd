@@ -1,0 +1,63 @@
+---
+title: "Shiny"
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+exclude: true
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width = 80,
+  tibble.width = 80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center"
+)
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+
+
+library(dplyr)
+```
+
+```{r include = FALSE, error=TRUE}
+path = here::here("flights.sqlite")
+if (file.exists(path))
+  unlink(path)
+```
+
+
+
+---
+
+## Final Projects
+
+For the final project you will be asked to do something interesting with something that we have learned in this class. 
+
+Anything vaguely related to statistical computing is fine
+
+* The final project will be due on Monday December 13th by 5:00 pm.
+
+* You can form your own team of up to 5 students to work on the project
+
+* Project will be turned in as an R package, including a write-up (in a vignette) and all necessary data, documentation, tests, etc.
+
+* Proposals due Monday, November 15th (requirements: team name, members, 1 paragraph description)
+
+
+---
+class: center, middle
+
+# Shiny live demo - ABC

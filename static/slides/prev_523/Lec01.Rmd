@@ -1,0 +1,235 @@
+---
+title: "Lec 01 - Welcome"
+subtitle: "<br/> Statistical Programming"
+author: "Fall 2021"
+date: "<br/> Dr. Colin Rundel"
+output:
+  xaringan::moon_reader:
+    css: ["slides.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+
+---
+exclude: true
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+```
+
+---
+class: middle, center
+
+# Course Details
+
+---
+
+## Course Team
+
+### Instrutor
+* Dr. Colin Rundel - colin.rundel@duke.edu / rundel@gmail.com 
+
+
+### Tutors
+* Evan Knox
+* Sarah Mansfield  
+
+---
+
+## Course website(s)
+
+* GitHub pages - https://sta523-fa21.github.io
+  - HTML, PDF, and Rmds of Slides
+  - Lecture screencasts (youtube)
+  - Readings
+  - Links to course tools
+
+* Sakai - https://sakai.duke.edu
+  - Lecture capture (Panopto)
+  - Link to GitHub page
+
+---
+
+## Course Timetable
+
+* Lectures (weekly) 
+  - Tuesdays, 12:00 - 1:15 pm - Old Chem 116
+  - Thursdays, 12:00 - 1:15 pm - Old Chem 116
+  
+* Labs (weekly)
+  - Lab 01 - Mondays, 10:15 to 11:30 am - Reuben-Cooke Building 127
+  - Lab 02 - Tuesdays, 12:00 to 13:15 pm - Old Chem 101
+
+---
+
+## Lectures
+
+- All lectures will be in person this semester 
+  - posted to Sakai (lecture capture)
+  - and Youtube (screencast)
+
+- Traditional lecture, live coding / coding demos, and short exercises + solution discussion
+
+---
+
+## Labs
+
+- Attendance is expected
+
+- You must attend the lab section you are enrolled in
+
+- Opportunity to work on course assignments with myself and TA support
+
+---
+
+## Announcements
+
+Will be posted on Sakai (Announcements tool) and sent via email, be sure to check both regularly.
+
+
+---
+
+## Grading
+
+This course is assessed 100% on your coursework (there is no exam). We will be assessing you based on the following assignments,
+
+<br/><br/>
+
+|Assignment|Type      |Value  | n  |Assigned             |
+|:---------|:---------|:------|:---|---------------------|
+|Homeworks |Team      |50%    | ~7 | ~ Every other week  |
+|Midterms  |Individual|40%    | 2  | ~ Week 6 and 13     |
+|Project   |Team      |10%    | 1  | ~ Week 10           | 
+
+---
+
+## Teams
+
+* Team assignments
+  + Roughly biweekly assignments
+  + Open ended
+  + 5 - 20 hours of work
+  + Peer evaluation after completion
+
+* Expectations and roles
+    + Everyone is expected to contribute equal *effort*
+    + Everyone is expected to understand *all* code turned in
+    + Individual contribution evaluated by peer evaluation, commits, etc.
+
+---
+
+## Collaboration policy
+
+- Only work that is clearly assigned as team work should be completed collaboratively (Homeworks + Projects). 
+
+- Individual assignments (Midterms) must be completed individually, you may not directly share or discuss answers / code with anyone other than the myself and the TAs.
+
+- On Homeworks you should not directly share answers / code with other teams in this class, however you are welcome to discuss the problems in general and ask for advice.
+
+
+---
+
+## Sharing / reusing code policy
+
+- We are aware that a huge volume of code is available on the web, and many tasks may have solutions posted.
+
+- Unless explicitly stated otherwise, this course's policy is that you may make use of any online resources (e.g. Google, StackOverflow, etc.) but you must explicitly cite where you obtained any code you directly use or use as inspiration in your solution(s). 
+
+- Any recycled code that is discovered and is not explicitly cited will be treated as plagiarism, regardless of source.
+
+
+---
+
+## Academic integrity
+
+> To uphold the Duke Community Standard:
+
+> - I will not lie, cheat, or steal in my academic endeavors;
+> - I will conduct myself honorably in all my endeavors; and
+> - I will act if the Standard is compromised.
+
+
+---
+class: center, middle
+
+# Course Tools
+
+---
+
+## GitHub Discussions
+
+- Online forum for asking and answering questions
+
+- Accessible at https://github.com/Sta523-Fa21/Discussions/discussions 
+
+  - will be linked from course website 
+  - you will need to join the course organization for access
+
+- All course logistic, assignment, etc. type questions should be posted here
+
+- Personal question (e.g. extensions, illnesses, etc.) should be via email to the instructor
+
+---
+
+## RStudio 
+
+.center[.large[https://rstudio.stat.duke.edu:8787]]
+
+- Browser based, departmental RStudio instance(s)
+
+- Requires Duke VPN or on campus connection to access
+
+- Provides consistency in hardware and software environments
+
+- Local R installations are fine but we will not guarantee support 
+
+---
+
+## GitHub
+
+- We will be using an organization specifically to this course <br/> https://github.com/sta523-fa21
+
+- All assignments will be distributed and collected via GitHub
+
+- All of your work and your membership (enrollment) in the organization is private
+
+- We will be distributing a survey this afternoon to collection your account names 
+
+    - Later this week you will be invited to the course organization.
+
+---
+
+## Username advice
+
+Some brief advice about selecting your account names (particularly for GitHub),
+
+- Incorporate your actual name! People like to know who they’re dealing with. Also makes your username easier for people to guess or remember.
+
+- Reuse your username from other contexts, e.g., Twitter or Slack.
+
+- Pick a username you will be comfortable revealing to your future boss.
+
+- Shorter is better than longer, but be as unique as possible.
+
+- Make it timeless. Avoid highlighting your current university, employer, <br/>or place of residence.
+
+
+---
+
+## Before Thursday
+
+* Create a GitHub account if you don't have one
+
+* Complete the course survey (you will receive this later today)
+
+* make sure you can login in to the Department's RStudio server
+  - https://rstudio.stat.duke.edu:8787
+  
+  
