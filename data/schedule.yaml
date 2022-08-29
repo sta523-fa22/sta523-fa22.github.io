@@ -11,7 +11,7 @@ schedule:
 - week: 1
   day: 1
   lecture: "Welcome & Syllabus"
-  slides:
+  slides: Lec01
   screencast:
   notes:
 
