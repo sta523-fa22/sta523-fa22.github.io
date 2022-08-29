@@ -1,17 +1,20 @@
-SLIDE_RMD_FILES := $(wildcard static/slides/*.Rmd)
-SLIDE_HTML_FILES  := $(subst Rmd,html,$(SLIDE_RMD_FILES))
-SLIDE_PDF_FILES  := $(subst Rmd,pdf,$(SLIDE_RMD_FILES))
+SLIDE_QMD_FILES := $(wildcard static/slides/*.qmd)
+SLIDE_HTML_FILES  := $(subst qmd,html,$(SLIDE_QMD_FILES))
+SLIDE_PDF_FILES  := $(subst qmd,pdf,$(SLIDE_QMD_FILES))
 
 .PHONY: clean push build all pdf
 
-build: $(SLIDE_HTML_FILES)
+build: $(SLIDE_HTML_FILES) $(SLIDE_PDF_FILES)
 	hugo
+	rm -rf docs/slides/prev
 
-all: html pdf build
+all: pdf build
 
 html: $(SLIDE_HTML_FILES)
+	echo $(SLIDE_HTML_FILES)
 
 pdf: $(SLIDE_PDF_FILES)
+	echo $(SLIDE_PDF_FILES)
 
 open: build
 	open docs/index.html
@@ -19,17 +22,10 @@ open: build
 clean:
 	rm -rf docs/
 	rm -f static/slides/*.html
+	rm -f static/slides/*.pdf
 
-static/slides/%.html: static/slides/%.Rmd
-	@Rscript -e "rmarkdown::render('$<')"
+static/slides/%.html: static/slides/%.qmd
+	quarto render $<
 	
 static/slides/%.pdf: static/slides/%.html
-	wkhtmltopdf --page-width 120 --page-height 213 -B 0 -L 0 -R 0 -T 0 -O "Landscape" $< $@
-	ls -la static/slides/
-	#@cd static/slides/; \
-		#Rscript -e "xaringan::decktape('$<', '$@')"
-		#Rscript -e "xaringanBuilder::build_pdf('$(<F)')"
-		#Rscript -e "pagedown::chrome_print('$(<F)')"
-		
-		# tries for a 16:9 aspect ratio
-		
+	Rscript -e "renderthis::to_pdf('$<')"

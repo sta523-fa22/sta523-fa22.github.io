@@ -1,6 +1,6 @@
 public/
-docs/
 *.swp
 .Rproj.user
 .Rhistory
-static/slides/slides 2.css
+.hugo_build.lock
+static/slides/prev/

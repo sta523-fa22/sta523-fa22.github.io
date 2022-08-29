@@ -1,0 +1,212 @@
+---
+title: "Welcome"
+subtitle: "Lecture 01"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+---
+
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+```
+
+
+# Course Details
+
+## Course Team
+
+### Instrutor
+* Dr. Colin Rundel 
+    - [colin.rundel@duke.edu](mailto:colin.rundel@duke.edu) *or* [rundel@gmail.com ](mailto:rundel@gmail.com)
+
+
+### TAs
+
+* David Buch
+* Nick Dahl
+* Xiaozhu Zhang
+
+
+## Course website(s)
+
+* GitHub pages - https://sta523-fa22.github.io
+  - HTML, PDF, and qmds of Slides
+  - Lecture screencasts (youtube)
+  - Readings
+
+* Sakai - https://sakai.duke.edu
+  - Link to GitHub page
+  - Announcements
+  - Gradebook
+
+
+
+## Course Timetable
+
+* Lectures (weekly) - Reuben-Cooke Building 126
+  - Wednesdays, 1:45 - 1:00 pm - 
+  - Fridays, 1:45 - 3:00 pm
+  
+* Labs (weekly) - Perkins LINK 087 (Classroom 3)
+  - Lab 01 - Tuesdays, 12:00 to 1:15 pm
+  - Lab 02 - Tuesdays, 1:45 to 3:00 pm
+
+## Labs
+
+- Attendance is expected
+
+- You must attend the lab section you are enrolled in
+
+- Opportunity to work on course assignments with TA support
+
+- Labs will begin in Week 2 (September 6th) 
+  - no lab Week 1
+
+
+
+## Announcements
+
+Will be posted on Sakai (Announcements tool) and sent via email, be sure to check both regularly.
+
+
+
+## Grading
+
+This course is assessed 100% on your coursework (there is no exam). We will be assessing you based on the following assignments,
+
+<br/>
+
+::: {.medium}
+|Assignment|Type      |Value  | n  |Assigned             |
+|:---------|:---------|:------|:--:|:--------------------|
+|Homeworks |Team      |50%    | ~7 | ~ Every other week  |
+|Midterms  |Individual|40%    | 2  | ~ Week 6 and 14     |
+|Project   |Team      |10%    | 1  | ~ Week 10           | 
+:::
+
+
+## Teams
+
+* Team assignments
+  + Roughly biweekly assignments
+  + Open ended, ~5 - 20 hours of work
+  + Peer evaluation after completion
+
+* Expectations and roles
+    + Everyone is expected to contribute equal *effort*
+    + Everyone is expected to understand *all* code turned in
+    + Individual contribution evaluated by peer evaluation, commits, etc.
+
+
+
+## Collaboration policy
+
+- Only work that is clearly assigned as team work should be completed collaboratively (Homeworks + Project). 
+
+- Individual assignments (Midterms) must be completed individually, you may not directly share or discuss answers / code with anyone other than the myself and the TAs.
+
+- On Homeworks you should not directly share answers / code with other teams, however you are welcome to discuss the problems in general and ask for advice.
+
+
+## Sharing / reusing code policy
+
+- We are aware that a huge volume of code is available on the web, and many tasks may have solutions posted.
+
+- Unless explicitly stated otherwise, this course's policy is that you may make use of any online resources (e.g. Google, StackOverflow, etc.) but you must explicitly cite where you obtained any code you directly use or use as inspiration in your solution(s). 
+
+- Any recycled code that is discovered and is not explicitly cited will be treated as plagiarism, regardless of source.
+
+
+
+
+## Academic integrity
+
+::: {.medium}
+> To uphold the Duke Community Standard:
+>
+> - I will not lie, cheat, or steal in my academic endeavors;
+> - I will conduct myself honorably in all my endeavors; and
+> - I will act if the Standard is compromised.
+:::
+
+# Course Tools
+
+
+## RStudio 
+
+::: {.large .center}
+[rstudio.stat.duke.edu:8787](http://rstudio.stat.duke.edu:8787)
+:::
+
+- Browser based, departmental RStudio instance(s)
+
+- Requires Duke VPN or on campus connection to access
+
+- Provides consistency in hardware and software environments
+
+- Local R installations are fine but we will not guarantee support
+
+## Common issues:
+
+- If `This site can’t provide a secure connection` change `https` to `http` in the url.
+  
+- If `This site can’t be reached` make sure you are on a Duke network and are not use an alternative DNS service.
+
+- Anything more exotic please reach out for help.
+
+## Local R + RStudio
+
+If working locally you should make sure that your environment meets the following requirements:
+
+* latest R (4.2.1)
+
+* latest RStudio (2022.07.1+554)
+
+* working git installation
+
+* ability to create ssh keys (for GitHub authentication)
+
+* *All* R packages updated to their latest version from CRAN
+
+
+
+## GitHub
+
+- We will be using an organization specifically to this course [github.com/sta523-fa22](https://github.com/sta523-fa22)
+
+- All assignments will be distributed and collected via GitHub
+
+- All of your work and your membership (enrollment) in the organization is private
+
+- We will be distributing a survey this week to collection your account names 
+
+    - Before lab next week you will be invited to the course organization.
+
+
+## Before next Tuesday
+
+* Create a GitHub account if you don't have one
+
+* Complete the course survey (you will receive before next Monday)
+
+* make sure you can login in to the Department's RStudio server
+  - [rstudio.stat.duke.edu:8787](http://rstudio.stat.duke.edu:8787)
+  
+## For those not yet enrolled (non-MSS)
+
+* We have seats available (hard cap of 30 per lab)
+
+* Enrollment survey posted at
+
+  * [bit.ly/sta523_fa22_enroll](https://bit.ly/sta523_fa22_enroll)
+  
+* Complete as soon as possible, permission numbers will be issued by the end of the week
