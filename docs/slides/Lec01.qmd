@@ -1,5 +1,5 @@
 ---
-title: "Welcome"
+title: "Welcome & Syllabus"
 subtitle: "Lecture 01"
 author: "Dr. Colin Rundel"
 footer: "Sta 523 - Fall 2022"
@@ -27,7 +27,8 @@ options(
 
 ### Instrutor
 * Dr. Colin Rundel 
-    - [colin.rundel@duke.edu](mailto:colin.rundel@duke.edu) *or* [rundel@gmail.com ](mailto:rundel@gmail.com)
+    - [colin.rundel@duke.edu](mailto:colin.rundel@duke.edu) / [cr173@duke.edu](mailto:cr173@duke.edu) / <br/>
+      [rundel@gmail.com ](mailto:rundel@gmail.com)
 
 
 ### TAs
@@ -39,12 +40,12 @@ options(
 
 ## Course website(s)
 
-* GitHub pages - https://sta523-fa22.github.io
+* GitHub pages - [sta523-fa22.github.io](https://sta523-fa22.github.io)
   - HTML, PDF, and qmds of Slides
   - Lecture screencasts (youtube)
   - Readings
 
-* Sakai - https://sakai.duke.edu
+* Sakai - [sakai.duke.edu](https://sakai.duke.edu/portal/site/8eec3d1f-5157-4e23-891b-0ee3ac67fb38)
   - Link to GitHub page
   - Announcements
   - Gradebook
@@ -70,7 +71,6 @@ options(
 - Opportunity to work on course assignments with TA support
 
 - Labs will begin in Week 2 (September 6th) 
-  - no lab Week 1
 
 
 
@@ -131,6 +131,8 @@ This course is assessed 100% on your coursework (there is no exam). We will be a
 
 ## Academic integrity
 
+<br/>
+
 ::: {.medium}
 > To uphold the Duke Community Standard:
 >
@@ -143,6 +145,8 @@ This course is assessed 100% on your coursework (there is no exam). We will be a
 
 
 ## RStudio 
+
+<br/>
 
 ::: {.large .center}
 [rstudio.stat.duke.edu:8787](http://rstudio.stat.duke.edu:8787)
