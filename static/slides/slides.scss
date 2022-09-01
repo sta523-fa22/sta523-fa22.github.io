@@ -11,6 +11,10 @@ $code-block-font-size: 0.9em;
 
 /*-- scss:rules --*/
 
+:root {
+  --r-main-font-size: 30px;
+}
+
 details>summary {
   font-size: 0.75em;
 }
@@ -49,7 +53,12 @@ details>summary {
   font-size: 0.8em;
 }
 
+.reveal .cell {
+  margin-bottom: 15px;
+}
 
 .reveal table td {
   border-bottom: 0;
+  padding-top: 2px;
+  padding-bottom: 2px
 }

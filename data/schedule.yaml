@@ -12,13 +12,13 @@ schedule:
   day: 1
   lecture: "Welcome & Syllabus"
   slides: Lec01
-  screencast:
+  screencast: https://youtu.be/WSf4NX9s_L0
   notes:
 
 - week: 1
   day: 3
   lecture: "Types and Control Flow in R"
-  slides:
+  slides: Lec02
   screencast:
   readings:
   - text: Tidyverse style guide
@@ -30,7 +30,7 @@ schedule:
 
 - week: 2
   day: 1
-  lecture: "NAs, functions, loops, and merge conflicts"
+  lecture: "Functions, loops, and merge conflicts"
   slides:
   screencast:
   readings:
