@@ -31,7 +31,7 @@ schedule:
 - week: 2
   day: 1
   lecture: "Functions, loops, and merge conflicts"
-  slides:
+  slides: Lec03
   screencast:
   readings:
   - text: Happy Git and GitHub
