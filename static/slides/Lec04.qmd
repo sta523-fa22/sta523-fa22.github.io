@@ -1,0 +1,791 @@
+---
+title: "Lists, Attributes, & S3"
+subtitle: "Lecture 04"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+```
+
+# Generic Vectors
+
+## Lists
+
+Lists are the other 1 dimensional (i.e. have a length) data structure in R, the different from atomic vectors in that they can contain a heterogeneous collection of R object (e.g. atomic vectors, functions, other lists, etc.).
+
+```{r}
+list("A", c(TRUE,FALSE), (1:4)/2, list(TRUE, 1), function(x) x^2)
+```
+
+
+## List Structure
+
+Often we want a more compact representation of a complex object, the `str` function is useful for this, particularly for lists.
+
+:::: {.medium}
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+str(c(1,2))
+str(1:100)
+str("A")
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+str( list(
+  "A", c(TRUE,FALSE), 
+  (1:4)/2, list(TRUE, 1), 
+  sum
+) )
+```
+:::
+::::
+::::
+
+
+## Recursive lists
+
+Lists can contain other lists, meaning they don't have to be flat
+
+```{r}
+str( list(1, list(2, list(3, 4), 5)) )
+```
+
+
+::: {.aside}
+Because of this, lists become a natural way of representing tree-like structures within R
+:::
+
+
+## List Coercion
+
+By default a vector will be coerced to a list (as a list is more general) if needed
+
+```{r}
+str( c(1, list(4, list(6, 7))) )
+```
+
+. . .
+
+We can coerce a list into an atomic vector using `unlist` - the usual type coercion rules then apply to determine the final type.
+
+```{r}
+unlist(list(1:3, list(4:5, 6)))
+unlist( list(1, list(2, list(3, "Hello"))) )
+```
+
+
+
+## Named lists
+
+Because of their more complex structure we often want to name the elements of a list (we can also do this with atomic vectors). 
+
+This can make accessing list elements more straight forward (and avoids the use of magic numbers)
+
+```{r}
+str(list(A = 1, B = list(C = 2, D = 3)))
+```
+
+. . .
+
+More complex names (i.e. non-valid object names) need to be quoted,
+
+```{r}
+list("knock knock" = "who's there?")
+```
+
+## Exercise 1
+
+Represent the following JSON data as a list in R.
+
+:::: {.columns}
+::: {.column width='75%'}
+::: {.small}
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25,
+  "address": 
+  {
+    "streetAddress": "21 2nd Street",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": 10021
+  },
+  "phoneNumber": 
+  [ {
+      "type": "home",
+      "number": "212 555-1239"
+    },
+    {
+      "type": "fax",
+      "number": "646 555-4567"
+  } ]
+}
+```
+:::
+:::
+::::
+
+
+
+```{r}
+#| echo: false
+countdown::countdown(5)
+```
+
+
+# NULL Values
+
+## `NULL`s
+
+`NULL` is a special value within R that represents nothing - it always has length zero and type / mode `"NULL"` and cannot have any attributes.
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+NULL
+typeof(NULL)
+mode(NULL)
+length(NULL)
+```
+:::
+::: {.column width='50%'}
+```{r}
+c()
+c(NULL)
+c(1, NULL, 2)
+c(NULL, TRUE, "A")
+```
+:::
+::::
+
+::: {.aside}
+Note - If you're familiar with SQL, its `NULL` is more like R's `NA`
+:::
+
+
+## 0-length coercion
+
+0-length length coercion is a special case of length coercion when one of the arguments has length 0. In this specialcase the longer vector will have its length coerced to 0.
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+integer() + 1
+log(numeric())
+```
+:::
+::: {.column width='50%'}
+```{r}
+logical() | TRUE
+character() > "M"
+```
+:::
+::::
+
+. . .
+
+As a `NULL` values always have length 0, this rule will apply (note the types)
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+NULL + 1
+NULL | TRUE
+```
+:::
+::: {.column width='50%'}
+```{r}
+#| error: true
+NULL > "M"
+log(NULL)
+```
+:::
+::::
+
+
+## `NULL`s and comparison
+
+Given the previous issue, comparisons and conditionals with `NULL`s can be problematic.
+
+```{r}
+x = NULL
+```
+
+```{r error=TRUE}
+if (x > 0)
+  print("Hello")
+```
+
+. . .
+
+```{r error=TRUE}
+if (!is.null(x) & (x > 0))
+  print("Hello")
+```
+
+. . .
+
+```{r error=TRUE}
+if (!is.null(x) && (x > 0))
+  print("Hello")
+```
+
+::: {.aside}
+The last example works due to short circuit evaluation which occurs with `&&` and `||` but not `&` or `|`.
+:::
+
+
+
+# Attributes
+
+## Attributes
+
+Attributes are metadata that can be attached to objects in R. Some are special ( e.g. `class`, `comment`, `dim`, `dimnames`, `names`, ...) as they change the behavior of the object(s).
+
+. . .
+
+Attributes are implemented as a *named list* that is attached to an object. They can be interacted with via the `attr` and `attributes` functions.
+
+```{r}
+(x = c(L=1,M=2,N=3))
+```
+
+. . .
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+str(attributes(x))
+```
+:::
+::: {.column width='50%'}
+```{r}
+attr(x, "names")
+attr(x, "something")
+```
+:::
+::::
+
+## Assigning attributes
+
+The most commonly used / important attributes will usually have helper functions for getting and setting the attribute,
+
+```{r}
+x
+names(x) = c("Z","Y","X")
+x
+```
+
+. . .
+
+```{r}
+names(x)
+```
+
+. . .
+
+```{r}
+attr(x, "names") = c("A","B","C")
+x
+```
+
+. . .
+
+```{r}
+names(x)
+```
+
+
+## Helpers functions vs attr
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+names(x) = 1:3
+x
+attributes(x)
+```
+:::
+::: {.column width='50%'}
+```{r}
+names(x) = c(TRUE, FALSE, TRUE)
+x
+attributes(x)
+```
+:::
+::::
+
+. . .
+
+```{r}
+attr(x, "names") = 1:3
+x
+attributes(x)
+```
+
+
+## Factors
+
+Factor objects are how R represents categorical data (e.g. a variable where there is a discrete set of possible outcomes).
+
+```{r}
+(x = factor(c("Sunny", "Cloudy", "Rainy", "Cloudy", "Cloudy")))
+```
+
+. . .
+
+```{r}
+str(x)
+```
+
+. . .
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+typeof(x)
+mode(x)
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+class(x)
+```
+:::
+::::
+
+
+
+## Composition
+
+A factor is just an integer vector with two attributes: `class` and `levels`.
+
+```{r}
+x
+str(attributes(x))
+```
+
+. . .
+
+We can build our own factor from scratch using `attr()`,
+
+```{r}
+y = c(3L, 1L, 2L, 1L, 1L)
+attr(y, "levels") = c("Cloudy", "Rainy", "Sunny")
+attr(y, "class") = "factor"
+y
+```
+
+## Building objects
+
+The approach we just used is a bit clunky - generally the preferred method for construction an object with attributes from scratch is to use the `structure` function.
+
+```{r}
+( y = structure(
+    c(3L, 1L, 2L, 1L, 1L),
+    levels = c("Cloudy", "Rainy", "Sunny"),
+    class = "factor"
+) )
+class(y)
+is.factor(y)
+```
+
+---
+
+## Factors are integer vectors?
+
+Knowing factors are stored as integers help explain some of their more interesting behaviors:
+
+```{r error=TRUE}
+x+1
+is.integer(x)
+as.integer(x)
+as.character(x)
+as.logical(x)
+```
+
+
+# S3 Object System
+
+## `class`
+
+The `class` attribute is an additional layer to R's type hierarchy,
+
+```{r echo=FALSE}
+f = function(x) x^2
+x = factor("A")
+l = list(1, "A")
+```
+
+ value            |  `typeof()`      |  `mode()`      |  `class()`        
+:-----------------|:-----------------|:---------------|:---------------
+`TRUE`            | `r typeof(TRUE)` | `r mode(TRUE)` | `r class(TRUE)` 
+`1`               | `r typeof(1)`    | `r mode(1)`    | `r class(1)`    
+`1L`              | `r typeof(1L)`   | `r mode(1L)`   | `r class(1L)`   
+`"A"`             | `r typeof("A")`  | `r mode("A")`  | `r class("A")`  
+`NULL`            | `r typeof(NULL)` | `r mode(NULL)` | `r class(NULL)` 
+`list(1, "A")`    | `r typeof(l)`    | `r mode(l)`    | `r class(l)`  
+`factor("A")`     | `r typeof(x)`    | `r mode(x)`    | `r class(x)`  
+`function(x) x^2` | `r typeof(f)`    | `r mode(f)`    | `r class(f)`
+`+`               | builtin          | function       | function
+`[`               | special          | function       | function
+
+## S3 class specialization
+
+::: {.medium}
+```{r}
+x = c("A","B","A","C")
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+print( x )
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+print( factor(x) )
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+print( unclass( factor(x) ) )
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+print.default( factor(x) )
+```
+:::
+
+## What's up with print?
+
+::: {.medium}
+```{r}
+print
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+print.default
+```
+:::
+
+
+## Other examples
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+mean
+t.test
+```
+:::
+::: {.column width='50%'}
+```{r}
+summary
+plot
+```
+:::
+::::
+
+. . .
+
+Not all base functions use this approach,
+
+```{r}
+sum
+```
+
+## What is S3?
+
+<br/>
+
+> S3 is R’s first and simplest OO system. It is the only OO system used in the base and stats packages, and it’s the most commonly used system in CRAN packages. S3 is informal and ad hoc, but it has a certain elegance in its minimalism: you can’t take away any part of it and still have a useful OO system.
+>
+>— Hadley Wickham, Advanced R
+
+::: {.aside}
+* S3 should not be confused with R's other object oriented systems: S4, Reference classes, R6, and soon [R7](https://www.rstudio.com/conference/2022/talks/introduction-to-r7/).
+:::
+
+
+## What's going on?
+
+S3 objects and their related functions work using a very simple dispatch mechanism - a generic function is created whose sole job is to call the `UseMethod` function which then calls a class specialized function using the naming convention: `<generic>.<class>`
+
+. . .
+
+We can see all of the specialized versions of the generic using the `methods` function.
+
+::: {.small}
+```{r}
+methods("plot")
+```
+:::
+
+## Other examples
+
+:::: {.small}
+:::: {.columns}
+::: {.column width='50%'}
+
+```{r}
+methods("print")
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+#| error: true
+print.factor
+```
+:::
+::::
+::::
+
+
+## The other way
+
+If instead we have a class and want to know what specialized functions exist for that class, then we can again use the `methods` function with the `class` argument.
+
+```{r}
+methods(class="factor")
+```
+
+## Adding methods
+
+```{r include=FALSE}
+rm(print.x)
+rm(print.y)
+```
+
+:::: {.medium}
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+x = structure(c(1,2,3), 
+              class="class_A")
+x
+```
+:::
+::: {.column width='50%'}
+```{r}
+y = structure(c(6,5,4), 
+              class="class_B")
+y
+```
+:::
+::::
+::::
+
+. . .
+
+:::: {.medium}
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+print.class_A = function(x) {
+  cat("Class A!\n")
+  print.default(unclass(x))
+}
+x
+```
+:::
+::: {.column width='50%'}
+```{r}
+print.class_B = function(x) {
+  cat("Class B!\n")
+  print.default(unclass(x))
+}
+y
+```
+:::
+::::
+::::
+
+. . .
+
+:::: {.medium}
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+class(x) = "class_B"
+x
+```
+:::
+::: {.column width='50%'}
+```{r}
+class(y) = "class_A"
+y
+```
+:::
+::::
+::::
+
+
+## Defining a new S3 Generic
+
+::: {.medium}
+```{r}
+shuffle = function(x) {
+  UseMethod("shuffle")
+}
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+shuffle.default = function(x) {
+  stop("Class ", class(x), " is not supported by shuffle.\n", call. = FALSE)
+}
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+shuffle.factor = function(f) {
+  factor( sample(as.character(f)), levels = sample(levels(f)) )
+}
+
+shuffle.integer = function(x) {
+  sample(x)
+}
+```
+:::
+
+## Shuffle results
+
+```{r}
+shuffle( 1:10 )
+```
+
+. . .
+
+```{r}
+shuffle( factor(c("A","B","C","A")) )
+```
+
+. . .
+
+```{r}
+#| error: true
+shuffle( c(1, 2, 3, 4, 5) )
+```
+
+. . .
+
+```{r}
+#| error: true
+shuffle( letters[1:5] )
+```
+
+## Exercise 2 - classes, modes, and types
+
+Below we have defined an S3 method called `report`, it is designed to return a message about the type/mode/class of an object passed to it.
+
+:::: {.small}
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+report = function(x) {
+  UseMethod("report")
+}
+
+report.default = function(x) {
+  "This class does not have a method defined."
+}
+```
+:::
+::: {.column width='50%'}
+```{r}
+report.integer = function(x) {
+ "I'm an integer!"
+}
+
+report.double = function(x) {
+  "I'm a double!"
+}
+
+report.numeric = function(x) {
+  "I'm a numeric!"
+}
+```
+:::
+::::
+::::
+
+Try running the `report` function with different input types, what happens? 
+
+Now run `rm("report.integer")` in your Console and try using the `report`
+function again, what has changed? 
+
+What does this tell us about S3, types, modes, and classes?
+
+What if we also `rm("report.double")`?
+
+
+## Conclusions?
+
+::: {.medium}
+From `UseMethod`s R documentation:
+
+> If the object does not have a class attribute, it has an implicit class. Matrices and arrays have class "matrix" or "array" followed by the class of the underlying vector. Most vectors have class the result of `mode(x)`, except that integer vectors have class `c("integer", "numeric")` and real vectors have class `c("double", "numeric")`.
+
+From Advanced R:
+
+> How does UseMethod() work? It basically creates a vector of method names, paste0("generic", ".", c(class(x), "default")), and then looks for each potential method in turn.
+:::
+
+
+. . .
+
+
+:::: {.center}
+::: {.large}
+Why?
+:::
+
+See [@WhyDoesR](https://twitter.com/WhyDoesR)
+::::
+
+

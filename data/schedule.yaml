@@ -32,7 +32,7 @@ schedule:
   day: 1
   lecture: "Functions, loops, and merge conflicts"
   slides: Lec03
-  screencast:
+  screencast: https://youtu.be/9F3tkRU45JM
   readings:
   - text: Happy Git and GitHub
     link: http://happygitwithr.com/
@@ -41,7 +41,7 @@ schedule:
 - week: 2
   day: 3
   lecture: "Attributes & S3"
-  slides:
+  slides: Lec04
   screencast:
   readings:
   - text: Adv R - OO Field Guide - S3
