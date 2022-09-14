@@ -42,7 +42,7 @@ schedule:
   day: 3
   lecture: "Attributes & S3"
   slides: Lec04
-  screencast:
+  screencast: https://youtu.be/WZ57QS_kemU
   readings:
   - text: Adv R - OO Field Guide - S3
     link: http://adv-r.had.co.nz/OO-essentials.html#s3
@@ -51,7 +51,7 @@ schedule:
 - week: 3
   day: 1
   lecture: "Data frames, matrices, & subsetting"
-  slides:
+  slides: Lec05
   screencast:
   readings:
   - text: Adv-R - Subsetting
