@@ -5,9 +5,18 @@
 {{ range .Params.contact }}
 <p>
     {{ .name }} - <a href="{{ .email }}">{{ .email }}</a> 
+    {{ range .hours }}
+    <div style="padding-left: 1em">
+    Office hours:
+    <ul>
+      <li>
+        {{ .day }} {{ .time }} - {{ .loc }}
+      </li>
+    </ul>
+    </div>
+    {{ end }}
 </p>
 {{ end }}
-
 
 
 

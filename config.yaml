@@ -39,9 +39,11 @@ params:
     - about
   contact:
     - name: Dr. Colin Rundel
-      office:
       email: colin.rundel@duke.edu
-      hours: TBD
+      hours:
+      - loc: 204 Old Chemistry / Zoom
+        day: Thursday
+        time: 3 - 4 pm
   assignments:
     - name: Homework
       type: Team
