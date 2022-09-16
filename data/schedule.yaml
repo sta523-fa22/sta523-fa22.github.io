@@ -61,8 +61,8 @@ schedule:
 - week: 3
   day: 3
   lecture: "Tidy data & dplyr"
-  slides:
-  screencast: Lec06
+  slides: Lec06
+  screencast:
   notes:
   readings:
   - text: dplyr Vignette
