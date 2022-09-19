@@ -4,3 +4,4 @@ public/
 .Rhistory
 .hugo_build.lock
 static/slides/prev/
+test/
