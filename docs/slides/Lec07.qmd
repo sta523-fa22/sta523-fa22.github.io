@@ -1,0 +1,549 @@
+---
+title: "tidyr"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+library(tidyverse)
+```
+
+#
+
+![](imgs/hex-tidyr.png){fig-align="center" width="66%"}
+
+
+# Reshaping data<br/>(Wide vs. Long)
+
+## Wide -> Long
+
+![](imgs/tidyr_gather.png){fig-align="center" width="60%"}
+
+::: {.center}
+`pivot_longer` (previously `gather`)
+:::
+
+::: {.aside}
+From [data import cheatsheet](https://github.com/rstudio/cheatsheets/blob/master/tidyr.pdf)
+:::
+
+
+## Syntax
+
+```{r}
+#| output-location: column
+(d = tibble::tribble(
+  ~country, ~"1999",  ~"2000",
+        "A", "0.7K",     "2K",
+        "B",  "37K",    "80K",
+        "C", "212K",   "213K"
+))
+```
+
+. . .
+
+<br/>
+
+```{r}
+#| code-line-numbers: "|3|4|5"
+#| output-location: column
+pivot_longer(
+  d, 
+  cols = "1999":"2000", 
+  names_to = "year", 
+  values_to = "cases"
+)
+```
+
+
+## Long -> Wide
+
+![](imgs/tidyr_spread.png){fig-align="center" width="60%"}
+
+::: {.center}
+`pivot_wider` (previously `spread`)
+:::
+
+::: {.aside}
+From [data import cheatsheet](https://github.com/rstudio/cheatsheets/blob/master/data-import.pdf)
+:::
+
+
+## Syntax 
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+#| output: false
+( d = tibble::tribble(
+    ~country, ~year,   ~type, ~count,
+         "A",  1999, "cases", "0.7K",
+         "A",  1999,   "pop",  "19M",
+         "A",  2000, "cases",   "2K",
+         "A",  2000,   "pop",  "20M",
+         "B",  1999, "cases",  "37K",
+         "B",  1999,   "pop", "172M",
+         "B",  2000, "cases", " 80K",
+         "B",  2000,   "pop", "174M",
+         "C",  1999, "cases", "212K",
+         "C",  1999,   "pop",   "1T",
+         "C",  2000, "cases", "213K",
+         "C",  2000,   "pop",   "1T"
+  )
+)
+```
+:::
+::: {.column width='50%'}
+```{r}
+#| echo: false
+d
+```
+:::
+::::
+
+. . .
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r wider}
+#| code-line-numbers: "|3|4|5"
+#| eval: false
+pivot_wider(
+  d, 
+  id_cols = country:year, 
+  names_from = type, 
+  values_from = count
+)
+```
+:::
+::: {.column width='50%'}
+```{r ref.label="wider"}
+#| echo: false
+```
+:::
+::::
+
+
+## Separate
+
+![](imgs/tidyr_separate.png){fig-align="center" width="70%"}
+
+. . .
+
+
+```{r}
+#| echo: false
+d = tibble::tribble(
+  ~country, ~year, ~rate,
+  "A", 1999, "0.7K/19M",
+  "A", 2000, "2K/20M",
+  "B", 1999, "37K/172M",
+  "B", 2000, "80K/174M",
+  "C", 1999, "212K/1T",
+  "C", 2000, "213K/1T"
+)
+```
+
+::: {.small}
+```{r}
+separate(d, rate, sep = "/", into = c("cases", "pop"))
+```
+:::
+
+::: {.aside}
+From [data import cheatsheet](https://github.com/rstudio/cheatsheets/blob/master/tidyr.pdf)
+:::
+
+
+## Unite
+
+![](imgs/tidyr_unite.png){fig-align="center" width="60%"}
+
+. . .
+
+```{r}
+#| echo: false
+
+d = tibble::tribble(
+  ~country, ~century, ~year,
+  "Afghan",  "19",     "99",
+  "Afghan",  "20",     "00",
+  "Brazil",  "19",     "99",
+  "Brazil",  "20",     "00",
+  "China",   "19",     "99",
+  "China",   "20",     "00"
+)
+```
+
+::: {.small}
+```{r}
+unite(d, century, year, col = "year", sep = "")
+```
+:::
+
+::: {.aside}
+From [data import cheatsheet](https://github.com/rstudio/cheatsheets/blob/master/tidyr.pdf)
+:::
+
+
+## Example 1 - tidy grades
+
+Is the following data tidy?
+
+```{r}
+grades = tibble::tribble(
+  ~name,   ~hw_1, ~hw_2, ~hw_3, ~hw_4, ~proj_1, ~proj_2,
+  "Alice",    19,    19,    18,    20,      89,      95,
+  "Bob",      18,    20,    18,    16,      77,      88,
+  "Carol",    18,    20,    18,    17,      96,      99,
+  "Dave",     19,    19,    18,    19,      86,      82
+)
+```
+
+. . .
+
+<br/>
+
+How would we calculate a final score based on the following formula,
+$$\text{score} = 0.5\,\frac{\sum_i\text{hw}_i}{80} + 0.5\,\frac{\sum_j\text{proj}_j}{200}$$
+
+
+## Semi-tidy approach
+
+```{r}
+grades %>%
+  mutate(
+    hw_avg = (hw_1+hw_2+hw_3+hw_4)/4,
+    proj_avg = (proj_1+proj_2)/2
+  ) %>%
+  mutate(
+    overall = 0.5*(proj_avg/100) + 0.5*(hw_avg/20)
+  )
+```
+
+
+## pivot_longer (Wide -> Long)
+
+```{r}
+tidyr::pivot_longer(
+  grades, 
+  cols = hw_1:proj_2, 
+  names_to = "assignment", 
+  values_to = "score"
+)
+```
+
+## Split type and id
+
+```{r}
+tidyr::pivot_longer(
+  grades, 
+  cols = hw_1:proj_2, 
+  names_to = c("type", "id"), 
+  names_sep = "_", 
+  values_to = "score"
+)
+```
+
+
+
+## Tidy approach?
+
+```{r}
+grades %>%
+  tidyr::pivot_longer(
+    cols = hw_1:proj_2, 
+    names_to = c("type", "id"),
+    names_sep = "_", 
+    values_to = "score"
+  ) %>% 
+  group_by(name, type) %>%
+  summarize(
+    total = sum(score),
+    .groups = "drop"
+  )
+```
+
+## pivot_wider - (Long -> Wide)
+
+::: {.medium}
+```{r}
+grades %>%
+  tidyr::pivot_longer(
+    cols = hw_1:proj_2, 
+    names_to = c("type", "id"), 
+    names_sep = "_", 
+    values_to = "score"
+  ) %>% 
+  group_by(name, type) %>%
+  summarize(
+    total = sum(score),
+    .groups = "drop"
+  ) %>%
+  tidyr::pivot_wider(
+    names_from = type, 
+    values_from = total
+  )
+```
+:::
+
+## Wrapping up
+
+::: {.medium}
+```{r}
+grades %>%
+  tidyr::pivot_longer(
+    cols = hw_1:proj_2, 
+    names_to = c("type", "id"), 
+    names_sep = "_", 
+    values_to = "score"
+  ) %>% 
+  group_by(name, type) %>%
+  summarize(
+    total = sum(score),
+    .groups = "drop"
+  ) %>%
+  tidyr::pivot_wider(
+    names_from = type, 
+    values_from = total
+  ) %>%
+  mutate(
+    score = 0.5*(hw/80) + 0.5*(proj/200)
+  )
+```
+:::
+
+## Exercise 1
+
+::: {.medium}
+The `palmerpenguin` package contains measurement data on various penguin species on islands near Palmer Station in Antarctica. The code below shows the # of each species measured on each of the three islands (missing island, penguin pairs implies that species does not occur on that island).
+
+```{r}
+palmerpenguins::penguins %>%
+  count(island, species)
+```
+
+Starting from these data construct a contingency table of counts for island (rows) by species (columns) using the pivot functions we've just discussed.
+:::
+
+```{r}
+#| echo: false
+countdown::countdown(5)
+```
+
+# Rectangling
+
+## Star Wars & repurrrsive
+
+`repurrrsive` is a package that contains a number of interesting example data sets that are stored in a hierarchical format. Many come from web-based APIs which provide results as JSON. 
+
+::: {.medium}
+```{r}
+str(repurrrsive::sw_people)
+```
+:::
+
+## RStudio data viewer
+
+```r
+View(repurrrsive::sw_people)
+```
+
+![](imgs/sw_people_View.png){fig-align="center" width="60%"}
+
+
+
+## Tidy data from nested lists
+
+Recent versions of `tidyr` have added several functions that are designed to aide in the tidying of hierarchical data. Since they are part of `tidyr` all of the following functions work with data frames.
+
+From `hoist()`, `unnest_longer()`, and `unnest_wider()` provide tools for rectangling, collapsing deeply nested lists into regular columns.
+
+## Lists as columns
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+(sw_df = tibble::tibble(
+  people = repurrrsive::sw_people
+))
+```
+:::
+::: {.column width='50%'}
+```{r}
+sw_df %>%
+  as.data.frame() %>%
+  head()
+```
+:::
+::::
+
+. . .
+
+```{r}
+is.data.frame(sw_df)
+nrow(sw_df)
+```
+
+
+## Unnesting
+
+::: {.medium}
+```{r}
+sw_df %>%
+  unnest_wider(people)
+```
+:::
+
+## More list columns
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+sw_df %>%
+  unnest_wider(people) %>% 
+  select(name, starships)
+```
+:::
+::: {.column width='50%'}
+```{r}
+sw_df %>%
+  unnest_wider(people) %>% 
+  select(name, starships) %>%
+  pull(starships) %>%
+  str()
+```
+:::
+::::
+
+
+## Unnest Longer
+
+::: {.medium}
+```{r}
+unnest_wider(sw_df, people) %>% 
+  select(name, starships) %>%
+  unnest_longer(starships)
+```
+:::
+
+## Aside - sw_starships
+
+::: {.medium}
+```{r}
+(ships = tibble(ships = repurrrsive::sw_starships) %>%
+   unnest_wider(ships) %>%
+   select(ship = name, url)
+)
+```
+:::
+
+# Aside - Joins
+
+![](imgs/hex-dplyr.png){fig-align="center" width="60%"}
+
+
+## Joins (left)
+
+![](imgs/left-join-extra.gif){fig-align="center" width="50%"}
+
+::: {.aside}
+From [gadenbuie/tidyexplain](https://github.com/gadenbuie/tidyexplain)
+:::
+
+
+## Joins (right)
+
+![](imgs/right-join.gif){fig-align="center" width="50%"}
+
+::: {.aside}
+From [gadenbuie/tidyexplain](https://github.com/gadenbuie/tidyexplain)
+:::
+
+
+## Joins (full / outer)
+
+![](imgs/full-join.gif){fig-align="center" width="50%"}
+
+::: {.aside}
+From [gadenbuie/tidyexplain](https://github.com/gadenbuie/tidyexplain)
+:::
+
+
+## Joins (inner)
+
+![](imgs/inner-join.gif){fig-align="center" width="50%"}
+
+::: {.aside}
+From [gadenbuie/tidyexplain](https://github.com/gadenbuie/tidyexplain)
+:::
+
+
+## Joining people and starships
+
+::: {.middle}
+```{r}
+sw_df %>%
+  unnest_wider(people) %>% 
+  select(name, starships) %>%
+  unnest_longer(starships) %>%
+  left_join(ships, by = c("starships" = "url"))
+```
+:::
+
+
+## Putting it together
+
+::: {.middle}
+```{r}
+sw_df %>%
+  unnest_wider(people) %>% 
+  select(name, starships) %>%
+  unnest_longer(starships) %>%
+  inner_join(ships, by = c("starships" = "url")) %>%
+  select(-starships) %>%
+  group_by(name) %>%
+  summarize(ships = list(ship), .groups = "drop")
+```
+:::
+
+##
+
+::: {.middle}
+```{r}
+sw_df %>%
+  unnest_wider(people) %>% 
+  select(name, starships) %>%
+  unnest_longer(starships) %>%
+  inner_join(ships, by = c("starships" = "url")) %>%
+  select(-starships) %>%
+  group_by(name) %>%
+  summarize(ships = paste(ship, collapse = ", "), .groups = "drop")
+```
+:::
+
+
+## Exercise 2
+
+1. Which planet appeared in the most starwars film (according to the data in `sw_planet`)?
+
+
+2. Which planet was the homeworld of the most characters in the starwars films?
+
+```{r}
+#| echo: false
+countdown::countdown(5)
+```

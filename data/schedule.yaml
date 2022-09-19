@@ -62,7 +62,7 @@ schedule:
   day: 3
   lecture: "Tidy data & dplyr"
   slides: Lec06
-  screencast:
+  screencast: https://youtu.be/HCUgZzdL1_g
   notes:
   readings:
   - text: dplyr Vignette
@@ -76,7 +76,7 @@ schedule:
 - week: 4
   day: 1
   lecture: "tidyr"
-  slides:
+  slides: Lec07
   screencast:
   readings:
   - text: tidyr pivoting
