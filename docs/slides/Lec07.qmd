@@ -237,7 +237,9 @@ grades %>%
 
 ## pivot_longer (Wide -> Long)
 
+::: {.medium}
 ```{r}
+#| output-location: column
 tidyr::pivot_longer(
   grades, 
   cols = hw_1:proj_2, 
@@ -245,10 +247,13 @@ tidyr::pivot_longer(
   values_to = "score"
 )
 ```
+:::
 
 ## Split type and id
 
+::: {.medium}
 ```{r}
+#| output-location: column
 tidyr::pivot_longer(
   grades, 
   cols = hw_1:proj_2, 
@@ -257,12 +262,15 @@ tidyr::pivot_longer(
   values_to = "score"
 )
 ```
+:::
 
 
 
 ## Tidy approach?
 
+::: {.medium}
 ```{r}
+#| output-location: column
 grades %>%
   tidyr::pivot_longer(
     cols = hw_1:proj_2, 
@@ -276,11 +284,13 @@ grades %>%
     .groups = "drop"
   )
 ```
+:::
 
 ## pivot_wider - (Long -> Wide)
 
 ::: {.medium}
 ```{r}
+#| output-location: column
 grades %>%
   tidyr::pivot_longer(
     cols = hw_1:proj_2, 
@@ -304,6 +314,7 @@ grades %>%
 
 ::: {.medium}
 ```{r}
+#| output-location: column
 grades %>%
   tidyr::pivot_longer(
     cols = hw_1:proj_2, 
