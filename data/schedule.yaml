@@ -77,7 +77,7 @@ schedule:
   day: 1
   lecture: "tidyr"
   slides: Lec07
-  screencast:
+  screencast: https://youtu.be/cUWVgkLf7T4
   readings:
   - text: tidyr pivoting
     link: https://tidyr.tidyverse.org/articles/pivot.html
@@ -88,8 +88,8 @@ schedule:
 - week: 4
   day: 3
   lecture: "Functional programming & purrr"
-  slides:
-  screencast:
+  slides: Lec08
+  screencast: 
   readings:
   - text: Purrr tutorial
     link: https://jennybc.github.io/purrr-tutorial/index.html

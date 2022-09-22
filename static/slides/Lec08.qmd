@@ -1,0 +1,638 @@
+---
+title: "Functional programming & purrr"
+subtitle: "Lecture 08"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+library(tidyverse)
+library(repurrrsive)
+```
+
+# Functional Programming
+
+
+## Functions as objects
+
+We have mentioned in passing that in R functions are treated as 1st class objects (like vectors), meaning they can be assigned names, stored in lists, etc.
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+f = function(x) {
+  x*x
+}
+
+f(2)
+
+g = f
+
+g(2)
+```
+:::
+::: {.column width='50%'}
+```{r error=TRUE}
+l = list(f = f, g = g)
+
+l$f(3)
+l[[2]](4)
+```
+:::
+::::
+
+. . .
+
+```{r error=TRUE}
+l[1](3)
+```
+
+
+## Functions as arguments
+
+We can pass in functions as arguments to other functions,
+
+```{r}
+do_calc = function(v, func) {
+  func(v)
+}
+```
+
+. . .
+
+```{r}
+do_calc(1:3, sum)
+do_calc(1:3, mean)
+do_calc(1:3, sd)
+```
+
+
+## Anonymous functions
+
+These are short functions that are created without ever assigning a name,
+
+```{r}
+function(x) {x+1}
+
+(function(y) {y-1})(10)
+```
+
+. . .
+
+this can be particularly helpful for implementing certain types of tasks,
+
+```{r}
+integrate(function(x) x, 0, 1)
+
+integrate(function(x) x^2-2*x+1, 0, 1)
+```
+
+
+## Base R anonymous function (lambda) shorthand
+
+::: {.medium}
+Along with the base pipe (`|>`), R v4.1.0 introduced a shortcut for anonymous functions using `\()`, we won't be using this for the same reason but it is useful to know that it exists.
+
+```{r}
+(\(x) {1+x})(1:5)
+```
+
+```{r}
+(\(x) x^2)(10)
+```
+
+```{r}
+integrate(\(x) sin(x)^2, 0, 1)
+```
+:::
+
+. . .
+
+::: {.medium}
+Use of this with the base pipe helps avoid the need for `.`, e.g.
+
+```{r}
+data.frame(x = runif(10), y = runif(10)) |>
+  {\(d) lm(y~x, data = d)}()
+```
+:::
+
+# apply (base R)
+
+
+## Apply functions
+
+The apply functions are a collection of tools for functional programming in base R, they are variations of the `map` function found in many other languages and apply a function over the elements of an input (vector).
+
+```{r, eval=FALSE}
+??base::apply
+---
+
+## 
+## Help files with alias or concept or title matching ‘apply’ using fuzzy
+## matching:
+## 
+## base::apply             Apply Functions Over Array Margins
+## base::.subset           Internal Objects in Package 'base'
+## base::by                Apply a Function to a Data Frame Split by Factors
+## base::eapply            Apply a Function Over Values in an Environment
+## base::lapply            Apply a Function over a List or Vector
+## base::mapply            Apply a Function to Multiple List or Vector Arguments
+## base::rapply            Recursively Apply a Function to a List
+## base::tapply            Apply a Function Over a Ragged Array
+```
+
+
+## lapply
+
+Usage: `lapply(X, FUN, ...)`
+
+`lapply` returns a list of the same length as `X`, each element of which is the result of applying `FUN` to the corresponding element of `X`.
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+lapply(1:8, sqrt) %>% 
+  str()
+```
+:::
+::: {.column width='50%'}
+```{r}
+lapply(1:8, function(x) (x+1)^2) %>% 
+  str()
+```
+:::
+::::
+
+
+## Argument matching
+
+::: {.medium}
+```{r}
+lapply(1:8, function(x, pow) x^pow, pow=3) %>% str()
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+lapply(1:8, function(x, pow) x^pow, x=2) %>% str()
+```
+:::
+
+## sapply
+
+Usage: `sapply(X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE)`
+
+`sapply` is a *user-friendly* version and wrapper of `lapply`, it is a *simplifying* version of lapply. Whenever possible it will return a vector, matrix, or an array.
+
+```{r}
+sapply(1:8, sqrt)
+sapply(1:8, function(x) (x+1)^2)
+sapply(1:8, function(x) c(x, x^2, x^3))
+```
+
+## Legnth mismatch?
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+sapply(1:6, seq)
+```
+:::
+::: {.column width='50%'}
+```{r}
+lapply(1:6, seq)
+```
+:::
+::::
+
+
+## Type mismatch?
+
+```{r}
+l = list(a = 1:3, b = 4:6, c = 7:9, d = list(10, 11, "A"))
+```
+
+```{r}
+sapply(l, function(x) x[1]) %>% str()
+```
+
+. . .
+
+```{r}
+sapply(l, function(x) x[[1]]) %>% str()
+```
+
+. . .
+
+```{r}
+sapply(l, function(x) x[[3]]) %>% str()
+```
+
+
+## `*`apply and data frames
+
+We can use these functions with data frames, the key is to remember that a data frame is just a fancy list.
+
+```{r}
+df = data.frame(
+  a = 1:6, 
+  b = letters[1:6], 
+  c = c(TRUE,FALSE)
+)
+```
+
+. . .
+
+```{r}
+lapply(df, class) %>% str()
+sapply(df, class)
+```
+
+
+## A more useful example
+
+Some sources of data (e.g. the US government) will encode missing values with `-999`, if want to replace these with `NA`s lapply is not a bad choice.
+
+::: {.small}
+```{r}
+d = tibble::tribble(
+  ~patient_id, ~age,  ~bp,  ~o2,
+            1,   32,  110,   97,
+            2,   27,  100,   95,
+            3,   56,  125, -999,
+            4,   19, -999, -999,
+            5,   65, -999,   99
+)
+```
+:::
+
+. . .
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+fix_missing = function(x) {
+  x[x == -999] = NA
+  x
+}
+lapply(d, fix_missing)
+```
+:::
+::: {.column width='50%'}
+```{r}
+lapply(d, fix_missing) %>%
+  as_tibble()
+```
+:::
+::::
+
+
+## dplyr alternative
+
+dplyr is also a viable option here using the `across()` helper, 
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+d %>%
+  mutate(
+    across(
+      bp:o2, 
+      fix_missing
+    )
+  )
+```
+:::
+::: {.column width='50%'}
+```{r}
+d %>%
+  mutate(
+    across(
+      where(is.numeric), 
+      fix_missing
+    )
+  )
+```
+:::
+::::
+
+
+## other less common apply functions
+
+* `apply()` - applies a function over the rows or columns of a data frame, matrix or array
+
+* `vapply()` - is similar to `sapply`, but has a enforced return type and size
+
+* `mapply()` -  like `sapply` but will iterate over multiple vectors at the same time.
+
+* `rapply()` - a recursive version of `lapply`, behavior depends largely on the `how` argument
+
+* `eapply()` -  apply a function over an environment.
+
+
+#
+
+![](imgs/hex-purrr.png){fig-align="center" width="50%"}
+
+
+## Map functions
+
+Basic functions for looping over objects and returning a value (of a specific type) - replacement for `lapply`/`sapply`/`vapply`.
+
+* `map()` - returns a list, equivalent to `lapply()`
+
+* `map_lgl()` - returns a logical vector.
+
+* `map_int()` - returns a integer vector.
+
+* `map_dbl()` - returns a double vector.
+
+* `map_chr()` - returns a character vector.
+
+* `map_dfr()` - returns a data frame by row binding.
+
+* `map_dfc()` - returns a data frame by column binding.
+
+* `walk()` - returns nothing,  used for side effects
+
+
+## Type Consistency
+
+R is a weakly / dynamically typed language which means there is no syntactic way to define a function which enforces argument or return types. This flexibility can be useful at times, but often it makes it hard to reason about your code and requires more verbose code to handle edge cases.
+
+::: {.small}
+```{r}
+x = list(rnorm(1e3), rnorm(1e3), rnorm(1e3))
+```
+:::
+
+. . .
+
+::: {.small}
+```{r}
+map_dbl(x, mean)
+```
+:::
+
+. . .
+
+::: {.small}
+```{r}
+map_chr(x, mean)
+```
+:::
+
+. . .
+
+::: {.small}
+```{r error=TRUE}
+map_int(x, mean)
+```
+:::
+
+. . .
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+map(x, mean) %>% str()
+```
+:::
+::: {.column width='50%'}
+```{r}
+lapply(x, mean) %>% str()
+```
+:::
+::::
+
+
+## Working with Data Frames
+
+`map_dfr` and `map_dfc` are particularly useful when working with and/or creating data frames. 
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+d = tibble::tribble(
+  ~patient_id, ~age,  ~bp,  ~o2,
+            1,   32,  110,   97,
+            2,   27,  100,   95,
+            3,   56,  125, -999,
+            4,   19, -999, -999,
+            5,   65, -999,   99
+)
+```
+:::
+::: {.column width='50%'}
+```{r}
+fix_missing = function(x) {
+  x[x == -999] = NA
+  x
+}
+```
+:::
+::::
+
+. . .
+
+```{r}
+purrr::map_dfc(d, fix_missing)
+```
+
+## Building by row 
+
+```{r}
+map_dfr(sw_people, function(x) x[1:5])
+```
+
+. . .
+
+```{r error=TRUE}
+map_dfr(sw_people, function(x) x)
+```
+
+
+## purrr style anonymous functions
+
+purrr lets us write anonymous functions using one sided formulas where the argument is given by `.` or `.x` for `map` and related functions.
+
+. . .
+
+```{r}
+map_dbl(1:5, function(x) x/(x+1))
+```
+
+. . .
+
+```{r}
+map_dbl(1:5, ~ ./(.+1))
+```
+
+. . .
+
+```{r}
+map_dbl(1:5, ~ .x/(.x+1))
+```
+
+. . .
+
+<br/>
+
+Generally, the latter option is preferred to avoid confusion with magrittr.
+
+
+
+## Multiargument anonymous functions
+
+Functions with the `map2` prefix work the same as the `map` functions but they iterate over two objects instead of one. Arguments in an anonymous function are given by `.x` and `.y` (or `..1` and `..2`) respectively.
+
+```{r}
+map2_dbl(1:5, 1:5, function(x,y) x / (y+1))
+```
+
+. . .
+
+```{r}
+map2_dbl(1:5, 1:5, ~ .x/(.y+1))
+```
+
+. . .
+
+```{r}
+map2_dbl(1:5, 1:5, ~ ..1/(..2+1))
+```
+
+. . .
+
+```{r}
+map2_chr(LETTERS[1:5], letters[1:5], paste0)
+```
+
+
+## Lookups
+
+Very often we want to extract only certain (named) values from a list, `purrr` provides a shortcut for this operation - if instead of a function you provide either a character or numeric vector, those values will be used to sequentially subset the elements being iterated.
+
+. . .
+
+```{r}
+purrr::map_chr(sw_people, "name") %>% head()
+```
+
+. . .
+
+```{r}
+purrr::map_chr(sw_people, 1) %>% head()
+```
+
+. . .
+
+```{r}
+purrr::map_chr(sw_people, list("films", 1)) %>% head(n=10)
+```
+
+
+## Length coercion?
+
+```{r error = TRUE}
+purrr::map_chr(sw_people, list("starships", 1))
+```
+. . .
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+sw_people[[2]]$name
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+sw_people[[2]]$starships
+```
+:::
+::::
+
+. . .
+
+```{r error = TRUE}
+purrr::map_chr(sw_people, list("starships", 1), .default = NA) %>% head()
+```
+
+. . .
+
+```{r error = TRUE}
+purrr::map(sw_people, list("starships", 1)) %>% head() %>% str()
+```
+
+
+## list columns
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+(chars = tibble(
+  name = purrr::map_chr(
+    sw_people, "name"
+  ),
+  starships = purrr::map(
+    sw_people, "starships"
+  )
+))
+```
+:::
+::: {.column width='50%' .fragment}
+```{r}
+chars %>%
+  mutate(
+    n_starships = map_int(
+      starships, length
+    )
+  )
+```
+:::
+::::
+
+# Example 
+
+<br/> 
+
+::: {.xlarge}
+List columns and approximating pi
+:::
+
+# Example 
+
+<br/> 
+
+::: {.xlarge}
+`discog` - purrr vs tidyr
+:::
+
+## Complex heirarchical data
+
+Often we may encounter complex data structures where our goal is not to rectangle every value (which may not even be possible) but rather to rectangle a small subset of the data.
+
+. . .
+
+```{r}
+str(repurrrsive::discog, max.level = 3)
+```
+
+
