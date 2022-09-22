@@ -549,7 +549,7 @@ sw_df %>%
 
 ## Exercise 2
 
-1. Which planet appeared in the most starwars film (according to the data in `sw_planet`)?
+1. Which planet appeared in the most starwars film (according to the data in `sw_planets`)?
 
 
 2. Which planet was the homeworld of the most characters in the starwars films?
