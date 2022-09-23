@@ -29,3 +29,9 @@ static/slides/%.html: static/slides/%.qmd
 	
 static/slides/%.pdf: static/slides/%.html
 	Rscript -e "renderthis::to_pdf('$<')"
+
+push: build
+	git pull
+	git add .
+	git commit -m "Make update"
+	git push
