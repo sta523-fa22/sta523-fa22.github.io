@@ -89,7 +89,7 @@ schedule:
   day: 3
   lecture: "Functional programming & purrr"
   slides: Lec08
-  screencast: 
+  screencast: https://youtu.be/gtinyRQm2rA
   readings:
   - text: Purrr tutorial
     link: https://jennybc.github.io/purrr-tutorial/index.html
@@ -102,7 +102,7 @@ schedule:
 - week: 5
   day: 1
   lecture: "ggplot2"
-  slides:
+  slides: Lec09
   screencast:
   readings:
   - text:  R4DS - Visualization

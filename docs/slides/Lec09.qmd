@@ -1,0 +1,1450 @@
+---
+title: "Lec 09 - Visualization with ggplot2"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center", fig.retina = 2, dpi = 150,
+  out.width = "100%"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+#
+
+![](imgs/hex-ggplot2.png){fig-align="center" width="40%"}
+
+
+## The Grammar of Graphics
+
+- Visualization concept created by Leland Wilkinson (The Grammar of Graphics, 1999)
+- attempt to taxonimize the basic elements of statistical graphics
+
+
+- Adapted for R by Hadley Wickham (2009)
+  - consistent and compact syntax to describe statistical graphics
+  
+  - highly modular as it breaks up graphs into semantic components 
+  
+  - ggplot2 is not meant as a guide to which graph to use and how to best convey your data (more on that later), but it does have some strong opinions.
+
+
+## Terminology
+
+A statistical graphic is a...
+
+- mapping of **data**
+
+- which may be **statistically transformed** (summarized, log-transformed, etc.)
+
+- to **aesthetic attributes** (color, size, xy-position, etc.)
+
+- using **geometric objects** (points, lines, bars, etc.)
+
+- and mapped onto a specific **facet** and **coordinate system**
+
+
+## Anatomy of a ggplot call
+
+```r
+ggplot(
+  data = [dataframe], 
+  mapping = aes(
+    x = [var x], y = [var y], 
+    color = [var color], 
+    shape = [var shape],
+    ...
+  )
+) +
+  geom_[some geom](
+    mapping = aes(
+      color = [var geom color],
+      ...
+    )
+  ) +
+  ... # other geometries
+  scale_[some axis]_[some scale]() +
+  facet_[some facet]([formula]) +
+  ... # other options
+```
+
+
+## Data - Palmer Penguins
+
+Measurements for penguin species, island in Palmer Archipelago, size (flipper length, body mass, bill dimensions), and sex.
+
+:::: {.columns}
+::: {.column width='33%'}
+![](imgs/penguins.png){fig-align="center" width="100%"}
+:::
+::: {.column width='66%' .small}
+```{r echo=FALSE}
+options(width = 60)
+```
+
+```{r}
+library(palmerpenguins)
+penguins
+```
+
+```{r echo=FALSE}
+options(width = 65)
+```
+:::
+::::
+
+
+## A basic ggplot
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins, fig.show = "hide"}
+ggplot(
+  data = penguins, 
+  mapping = aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point() +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste(
+      "Dimensions for Adelie, Chinstrap,",
+      "and Gentoo Penguins"
+    ),
+    x = "Bill depth (mm)", 
+    y = "Bill length (mm)",
+    color = "Species"
+  )
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins", echo = FALSE, warning = FALSE, out.width = "100%", fig.width = 8}
+```
+:::
+::::
+
+
+
+# Text <-> Plot
+
+##
+
+::: {.small}
+> *Start with the `penguins` data frame*
+:::
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r penguins-0, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "1"
+ggplot(data = penguins)
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-0", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> *map bill depth to the x-axis*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-1, fig.show = "hide", warning = FALSE}\
+#| code-line-numbers: "2"
+ggplot(
+  data = penguins,
+  mapping = aes(x = bill_depth_mm)
+) 
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-1", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> *and map bill length to the y-axis.*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-2, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "5"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+)
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-2", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> *Represent each observation with a point*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-3, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "8"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) + 
+  geom_point()
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-3", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> *and map species to the color of each point.*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-4, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "10"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) + 
+  geom_point(
+    mapping = aes(color = species)
+  )
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-4", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> *Title the plot "Bill depth and length"*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-5, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "11"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(title = "Bill depth and length")
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-5", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> Title the plot "Bill depth and length", 
+> *add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins"*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-6, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "13-15"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste("Dimensions for Adelie,",
+                     "Chinstrap, and Gentoo",
+                     "Penguins")
+  ) 
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-6", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> Title the plot "Bill depth and length", 
+> add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins", 
+> *label the x and y axes as "Bill depth (mm)" and "Bill length (mm)", respectively*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-7, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "16-17"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste("Dimensions for Adelie,",
+                     "Chinstrap, and Gentoo",
+                     "Penguins"),
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)"
+  )
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-7", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> Title the plot "Bill depth and length", 
+> add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins", 
+> label the x and y axes as "Bill depth (mm)" and "Bill length (mm)", respectively,
+> *label the legend "Species"*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+
+```{r penguins-8, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "18"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste("Dimensions for Adelie,",
+                     "Chinstrap, and Gentoo",
+                     "Penguins"),
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)",
+    color = "Species"
+  ) 
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-8", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> Title the plot "Bill depth and length", 
+> add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins", 
+> label the x and y axes as "Bill depth (mm)" and "Bill length (mm)", respectively,
+> label the legend "Species", 
+> *and add a caption for the data source.*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-9, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "19"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste("Dimensions for Adelie,",
+                     "Chinstrap, and Gentoo",
+                     "Penguins"),
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)",
+    color = "Species",
+    caption = "Source: palmerpenguins package"
+  )
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-9", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+
+##
+
+::: {.small}
+> Start with the `penguins` data frame,
+> map bill depth to the x-axis
+> and map bill length to the y-axis. 
+> Represent each observation with a point
+> and map species to the color of each point.
+> Title the plot "Bill depth and length", 
+> add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins", 
+> label the x and y axes as "Bill depth (mm)" and "Bill length (mm)", respectively,
+> label the legend "Species", 
+> and add a caption for the data source.
+> *Finally, use the viridis color palete for all points.*
+:::
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r penguins-10, fig.show = "hide", warning = FALSE}
+#| code-line-numbers: "21"
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  labs(
+    title = "Bill depth and length",
+    subtitle = paste("Dimensions for Adelie,",
+                     "Chinstrap, and Gentoo",
+                     "Penguins"),
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)",
+    color = "Species",
+    caption = "Source: palmerpenguins package"
+  ) +
+  scale_color_viridis_d()
+```
+:::
+::: {.column width='50%'}
+```{r ref.label = "penguins-10", echo = FALSE, warning = FALSE, fig.width = 8}
+```
+:::
+::::
+
+
+## Argument names
+
+Often we omit the names of first two arguments when building plots with `ggplot()`.
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r named-args, eval = FALSE}
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    mapping = aes(color = species)
+  ) +
+  scale_color_viridis_d()
+```
+:::
+::: {.column width='50%'}
+```{r not-named-args, eval = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm,
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(color = species)
+  ) +
+  scale_color_viridis_d()
+```
+:::
+::::
+
+::: {.aside}
+*Note* that `ggplot` and `geom_*` swap the order of the `data` and `mapping` arguments.
+:::
+
+
+
+# Aesthetics
+
+
+## Aesthetics options
+
+Commonly used characteristics of plotting geometries that can be **mapped to a specific variable** in the data, examples include:
+
+- position (`x`, `y`)
+- `color`
+- `shape`
+- `size`
+- `alpha` (transparency)
+
+Different geometries have different aesthetics that can be used - see the [ggplot2 geoms](https://ggplot2.tidyverse.org/reference/index.html#Geoms) help files for listings.
+
+
+* Aesthetics given in `ggplot()` apply to all `geom`s.
+
+* Aesthetics for a specific `geom_*()` can be overridden via `mapping` or as an argument.
+
+
+## color
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r color, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point(
+    aes(color = species)
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "color", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Shape
+
+Mapped to a different variable than `color`
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r shape-island, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(
+      color = species,
+      shape = island  
+    )
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "shape-island", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Shape
+
+Mapped to same variable as `color`
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r shape-species, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(
+      color = species,
+      shape = species 
+    )
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "shape-species", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Size
+
+Using a fixed value (note this value is outside of the `aes` call)
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r size1, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(
+      color = species,
+      shape = species
+    ),
+    size = 3
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "size1", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Size
+
+Mapped to a variable
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r size2, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(
+      color = species,
+      shape = species,
+      size = body_mass_g
+    ),
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "size2", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Alpha
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r alpha, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins,
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) +
+  geom_point(
+    aes(
+      color = species,
+      shape = species,
+      alpha = body_mass_g
+    ),
+    size = 3
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "alpha", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Mapping vs settings
+
+- **Mapping** - Determine an aesthetic (the size, alpha, etc.) of a geom based on the values of a variable in the data
+  - wrapped by `aes()` and pass as `mapping` argument to `ggplot()` or `geom_*()`.
+
+<br/>
+
+- **Setting** - Determine an aesthetic (the size, alpha, etc.) of a geom **not** based on the values of a variable in the data, usually a constant value.
+  - passed directly into `geom_*()` as an argument.
+
+. . .
+
+<br/>
+
+From the previous slide `color`, `shape`, and `alpha` are all **aesthetics** while `size` was a **setting**.
+
+
+
+# Faceting
+
+
+## Faceting
+
+- Smaller plots that display different subsets of the data
+
+- Useful for exploring conditional relationships and large data
+
+- Sometimes referred to as "small multiples"
+
+
+## facet_grid
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point() +
+  facet_grid(
+    species ~ island
+  )  
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Compare with ...
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet_comp, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point(
+    aes(
+      color = species,
+      shape = island
+    ), 
+    size = 3
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet_comp", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## facet_grid (cols)
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet2, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point() +
+  facet_grid(
+    ~ species
+  )  
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet2", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## facet_grid (rows)
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet3, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point() +
+  facet_grid(
+    species ~ .
+  )  
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet3", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+
+
+## facet_wrap
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facetwrap, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point() +
+  facet_wrap(
+    ~ species
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facetwrap", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## facet_wrap
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facetwrap2, warning = FALSE, fig.show = "hide"}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm
+  )
+) + 
+  geom_point() +
+  facet_wrap(
+    ~ species, ncol = 2
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facetwrap2", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Faceting and color
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet-color-legend, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm, 
+    color = species
+  )
+) +
+  geom_point() +
+  facet_grid(
+    species ~ sex
+  )
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet-color-legend", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+## Hiding legend elements
+
+:::: {.columns .medium}
+::: {.column width='35%'}
+```{r facet-color-no-legend, fig.show = "hide", warning = FALSE}
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm, 
+    color = species
+  )
+) +
+  geom_point() +
+  facet_grid(
+    species ~ sex
+  ) +
+  guides(color = "none")
+```
+:::
+::: {.column width='65%'}
+```{r ref.label = "facet-color-no-legend", echo = FALSE, warning = FALSE}
+```
+:::
+::::
+
+
+# A brief plot tour <br/> of ggplot2 plots
+
+```{r}
+#| include: false
+
+knitr::opts_chunk$set(out.width="75%")
+```
+
+## Histograms
+
+::: {.medium}
+```{r hist1, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g)
+) +
+  geom_histogram()
+```
+:::
+
+## Histograms - bins
+
+::: {.medium}
+```{r hist3, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = body_mass_g )
+) +
+  geom_histogram(bins = 50)
+```
+:::
+
+
+## Histograms - binwidth
+
+::: {.medium}
+```{r hist2, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = body_mass_g )
+) +
+  geom_histogram(binwidth = 250)
+```
+:::
+
+
+
+
+## Histograms - color
+
+::: {.medium}
+```{r hist5, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g, 
+      color = species )
+) +
+  geom_histogram(bins = 20)
+```
+:::
+
+
+## Histograms - fill
+
+::: {.medium}
+```{r hist4, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g, 
+      fill = species )
+) +
+  geom_histogram(bins = 20)
+```
+:::
+
+
+## Histograms - position
+
+::: {.medium}
+```{r hist_pos, warning = FALSE}
+#| out-width: 66%
+ggplot(
+  penguins, 
+  aes(x = body_mass_g, 
+      fill = species )
+) + 
+  geom_histogram(
+    bins = 20, alpha = 0.5,
+    position = "identity"
+  )
+```
+:::
+
+
+
+## Histograms - facets
+
+::: {.medium}   
+```{r hist6, warning = FALSE}
+#| out-width: 66%
+ggplot(
+  penguins, 
+  aes(x = body_mass_g, 
+      fill = species ) 
+) +
+  geom_histogram(bins = 20) +
+  facet_grid(species ~ .) + 
+  guides(fill = "none")
+```
+:::
+
+
+## Density plot
+
+::: {.medium}
+```{r dens1, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g)
+) +
+  geom_density()
+```
+:::
+
+
+## Density plot - fill
+
+::: {.medium}
+```{r dens3, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g, 
+      fill = species )
+) +
+  geom_density(alpha = 0.25)
+```
+:::
+
+
+## Density plot - adjust
+
+::: {.medium}
+```{r dens2, warning = FALSE}
+#| out-width: 66%
+ggplot(
+  penguins,
+  aes(x = body_mass_g,
+     fill = species )
+) +
+  geom_density(
+    adjust = 0.5, alpha = 0.25
+  )
+```
+:::
+
+
+## Violin plot
+
+::: {.medium}
+```{r violin, warning = FALSE}
+#| out-width: 66%
+ggplot(penguins, 
+  aes(x = species, fill = species,
+      y = body_mass_g )
+) +
+  geom_violin()
+```
+:::
+
+
+## Ridge plot
+
+::: {.medium}
+```{r ridge, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g,
+      y = species, fill = species )
+) +
+  ggridges::geom_density_ridges(alpha = 0.5)
+```
+:::
+
+
+
+## Ridge plot - more categories + dplyr
+
+::: {.medium}
+```{r ridge2, warning = FALSE}
+#| output-location: "slide"
+#| out-width: 100%
+penguins %>%
+  mutate(
+    species_sex = paste0(
+      species, " (", sex, ")"
+    )
+  ) %>%
+  ggplot(
+    aes(
+      x = body_mass_g,
+      y = species_sex,
+      fill = species
+    )
+  ) +
+  ggridges::geom_density_ridges(
+    alpha = 0.5
+  )
+```
+:::
+
+
+
+## Box plot
+
+::: {.medium}
+```{r box1, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g,
+      y = species )
+) +
+  geom_boxplot()
+```
+:::
+
+
+## Box plot - coord_flip
+
+::: {.medium}
+```{r box2, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = body_mass_g,
+      y = species )
+) +
+  geom_boxplot() + 
+  coord_flip()
+```
+:::
+
+
+## Box plot - swap coords
+
+::: {.medium}
+```{r box3, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = species,
+      y = body_mass_g )
+) +
+  geom_boxplot()
+```
+:::
+
+
+## Scatter plot
+
+::: {.medium}
+```{r scatter1, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = bill_depth_mm, 
+      y = bill_length_mm, 
+      color = species )
+) +
+  geom_point() 
+```
+:::
+
+
+## Scatter plot - geom_smooth
+
+::: {.medium}
+```{r scatter3, warning = FALSE}
+ggplot(
+  penguins, 
+  aes(x = bill_depth_mm, 
+      y = bill_length_mm, 
+      color = species )
+) +
+  geom_point() +
+  geom_smooth( fullrange = TRUE )
+```
+:::
+
+## Scatter plot - geom_smooth w/ lm
+
+::: {.medium}
+```{r scatter2, warning = FALSE}
+#| output-location: "slide"
+#| out-width: 100%
+ggplot(
+  penguins, 
+  aes(
+    x = bill_depth_mm, 
+    y = bill_length_mm, 
+    color = species
+  )
+) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    fullrange = TRUE
+  )
+```
+:::
+
+
+
+
+## Line plot
+
+::: {.medium}
+```{r line, warning = FALSE}
+#| out-width: 75%
+penguins %>%
+  count(species, year) %>%
+  ggplot(
+    aes(x = year, y = n, 
+        color = species, group = species )
+  ) +
+  geom_line()
+```
+:::
+
+
+## Line plot - with points
+
+::: {.medium}
+```{r line2, warning = FALSE}
+#| out-width: 75%
+penguins %>%
+  count(species, year) %>%
+  ggplot(
+    aes(x = year, y = n, 
+        color = species, group = species )
+  ) +
+  geom_line() + 
+  geom_point()
+```
+:::
+
+
+## Bar plot
+
+::: {.medium}
+```{r bar1, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = species )
+) +
+  geom_bar()
+```
+:::
+
+
+## Stacked bar plot
+
+::: {.medium}
+```{r bar2, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = species,
+       fill = island )
+) +
+  geom_bar()
+```
+:::
+
+
+## Stacked relative frequency bar plot
+
+::: {.medium}
+```{r bar3, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = species,
+       fill = island )
+) +
+  geom_bar(position = "fill")
+```
+:::
+
+
+## Dodged bar plot
+
+::: {.medium}
+```{r bar4, warning = FALSE}
+ggplot(
+  penguins, 
+  aes( x = species,
+       fill = sex )
+) +
+  geom_bar(position = "dodge")
+```
+:::
+
+
+# Exercises
+
+## Exercise 1
+
+Recreate, as faithfully as possible, the following plot using ggplot2 and the `penguins` data.
+
+```{r echo = FALSE, out.width = "60%", fig.height = 5}
+penguins %>%
+  filter(!is.na(sex)) %>%
+  ggplot(
+    aes(
+      x = body_mass_g,
+      fill = species
+    ) 
+  ) +
+  geom_density(alpha = 0.5, color = NA) +
+  facet_wrap(~sex, nrow = 2) + 
+  labs(
+    x = "Body Mass (g)",
+    y = "",
+    fill = "Species"
+  )
+```
+
+
+
+## Exercise 2
+
+Recreate, as faithfully as possible, the following plot from the `palmerpenguin` package readme in ggplot2.
+
+```{r echo = FALSE, out.width="55%"}
+knitr::include_graphics("imgs/palmer_plot_ex2.png")
+```
+
+::: {.aside}
+See the `palmerpenguins` pkgdown [site](https://allisonhorst.github.io/palmerpenguins/)
+:::
