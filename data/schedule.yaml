@@ -103,7 +103,7 @@ schedule:
   day: 1
   lecture: "ggplot2"
   slides: Lec09
-  screencast:
+  screencast: https://youtu.be/gD9BcHqV1EU
   readings:
   - text:  R4DS - Visualization
     link: http://r4ds.had.co.nz/data-visualisation.html
@@ -114,7 +114,7 @@ schedule:
 - week: 5
   day: 3
   lecture: "Visualization Design"
-  slides:
+  slides: Lec10
   screencast:
   readings:
   notes:

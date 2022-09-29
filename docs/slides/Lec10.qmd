@@ -1,0 +1,766 @@
+---
+title: "ggplot2 ecosystem<br/>& designing visualizations"
+subtitle: "Lecture 10"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center", fig.retina = 2, dpi = 150,
+  out.width = "100%"
+)
+
+library(tidyverse)
+library(palmerpenguins)
+```
+
+
+# The wider ggplot2 ecosystem
+
+
+# ggthemes
+
+
+## ggplot2 themes
+
+:::: {.small}
+```{r theme1}
+g = ggplot( palmerpenguins::penguins, 
+            aes(x=species, y=body_mass_g, fill=species)) + 
+    geom_boxplot()
+```
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r theme2, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g
+```
+
+```{r theme3, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + theme_dark()
+```
+:::
+::: {.column width='50%'}
+```{r theme4, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + theme_minimal()
+```
+
+```{r theme5, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + theme_void()
+```
+:::
+::::
+
+::::
+
+## ggthemes
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r theme6, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + ggthemes::theme_economist() + 
+  ggthemes::scale_fill_economist()
+```
+
+```{r theme7, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + ggthemes::theme_fivethirtyeight() + 
+  ggthemes::scale_fill_fivethirtyeight()
+```
+:::
+::: {.column width='50%'}
+```{r theme8, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + ggthemes::theme_gdocs() +
+  ggthemes::scale_fill_gdocs()
+```
+
+```{r theme9, warning=FALSE, fig.height=5, fig.width=7, out.width="50%"}
+g + ggthemes::theme_wsj() +
+  ggthemes::scale_fill_wsj()
+```
+:::
+::::
+
+
+## And for those who miss Excel
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r theme10, warning=FALSE, fig.height=5, fig.width=7, out.width="100%"}
+g + ggthemes::theme_excel() +
+  ggthemes::scale_fill_excel()
+```
+:::
+::: {.column width='50%'}
+```{r theme11, warning=FALSE, fig.height=5, fig.width=7, out.width="100%"}
+g + ggthemes::theme_excel_new() +
+  ggthemes::scale_fill_excel_new()
+```
+:::
+::::
+
+
+#
+
+![](imgs/hex-ggrepel.png){fig-align="center" width="40%"}
+
+## 
+
+::: {.small}
+```{r ggrepel1}
+d = tibble(
+  car = rownames(mtcars),
+  weight = mtcars$wt,
+  mpg = mtcars$mpg
+) %>%
+  filter(weight > 2.75, weight < 3.45)
+```
+:::
+
+. . .
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r ggrepel2, out.width="65%", fig.width=5, fig.height=5}
+#| code-line-numbers: "3-5"
+ggplot(d, aes(x=weight, y=mpg)) +
+  geom_point(color="red") +
+  geom_text(
+    aes(label = car)
+  )
+```
+:::
+::: {.column width='50%'}
+```{r ggrepel3, out.width="65%", fig.width=5, fig.height=5}
+#| code-line-numbers: "3-5"
+ggplot(d, aes(x=weight, y=mpg)) +
+  geom_point(color="red") +
+  ggrepel::geom_text_repel(
+    aes(label = car)
+  )
+```
+:::
+::::
+
+
+##
+
+::: {.small}
+```{r ggrepel5, out.width="65%", fig.width=8, fig.height=5}
+#| code-line-numbers: "|5,6" 
+ggplot(d, aes(x=weight, y=mpg)) +
+  geom_point(color="red") +
+  ggrepel::geom_text_repel(
+    aes(label = car),
+    nudge_x = .1, box.padding = 1, point.padding = 0.6,
+    arrow = arrow(length = unit(0.02, "npc")), segment.alpha = 0.25
+  )
+```
+:::
+
+
+#
+
+
+![](imgs/patchwork_logo.png){fig-align="center" width="40%"}
+
+
+## ggplot objects
+
+```{r pw_plots}
+library(patchwork)
+
+p1 = ggplot(palmerpenguins::penguins) + 
+  geom_boxplot(aes(x = island, y = body_mass_g))
+
+p2 = ggplot(palmerpenguins::penguins) + 
+  geom_boxplot(aes(x = species, y = body_mass_g))
+
+p3 = ggplot(palmerpenguins::penguins) + 
+  geom_point(aes(x = flipper_length_mm, y = body_mass_g, color = sex))
+
+p4 = ggplot(palmerpenguins::penguins) + 
+  geom_point(aes(x = bill_length_mm, y = body_mass_g, color = sex))
+```
+
+. . .
+
+```{r}
+class(p1)
+```
+
+
+##
+
+```{r pw_plot1, fig.width=10, out.width="70%", warning=FALSE}
+p1 + p2 + p3 + p4
+```
+
+
+##
+
+```{r pw_plot2, fig.width=10, out.width="70%", warning=FALSE}
+p1 + p2 + p3 + p4 + plot_layout(nrow=1)
+```
+
+
+##
+
+```{r pw_plot3, fig.width=10, out.width="70%", warning=FALSE}
+p1 / (p2 + p3 + p4)
+```
+
+
+##
+
+
+```{r pw_plot4, fig.width=10, out.width="70%", warning=FALSE}
+p1 + p2 + p3 + p4 + 
+  plot_annotation(title = "Palmer Penguins", tag_levels = c("A"))
+```
+
+
+##
+
+::: {.small}
+```{r pw_plot5, fig.width=10, out.width="60%", warning=FALSE}
+p1 + {
+  p2 + {
+    p3 + p4 + plot_layout(ncol = 1) + plot_layout(tag_level = 'new')
+  }
+} + 
+  plot_layout(ncol = 1) +
+  plot_annotation(tag_levels = c("1","a"), tag_prefix = "Fig ")
+```
+:::
+
+
+# GGally
+
+##
+
+```{r ggally, message=FALSE, warning=FALSE, out.width="50%"}
+GGally::ggpairs(palmerpenguins::penguins)
+```
+
+
+#
+
+```{r echo=FALSE, fig.align="center", out.width="45%"}
+knitr::include_graphics("imgs/hex-gganimate.png")
+```
+
+
+##
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r eval=FALSE}
+#| code-line-numbers: "|19"
+airq = airquality
+airq$Month = month.name[airq$Month]
+
+ggplot(
+  airq, 
+  aes(Day, Temp, group = Month)
+) + 
+  geom_line() + 
+  geom_segment(
+    aes(xend = 31, yend = Temp), 
+    linetype = 2, 
+    colour = 'grey'
+  ) + 
+  geom_point(size = 2) + 
+  geom_text(
+    aes(x = 31.1, label = Month), 
+    hjust = 0
+  ) + 
+  gganimate::transition_reveal(Day) +
+  coord_cartesian(clip = 'off') + 
+  labs(
+    title = 'Temperature in New York', 
+    y = 'Temperature (°F)'
+  ) + 
+  theme_minimal() + 
+  theme(plot.margin = margin(5.5, 40, 5.5, 5.5))
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE}
+knitr::include_graphics("imgs/gganim_weather.gif")
+```
+:::
+::::
+
+::: {.aside}
+[github.com/thomasp85/gganimate](https://github.com/thomasp85/gganimate)
+:::
+
+## More extensions
+
+::: {.center .large}
+[exts.ggplot2.tidyverse.org/gallery/](https://exts.ggplot2.tidyverse.org/gallery/)
+:::
+
+```{r echo=FALSE, out.width="66%"}
+knitr::include_graphics("imgs/ggplot2_exts.png")
+```
+
+
+
+# Why do we visualize?
+
+
+## Asncombe's Quartet
+
+```{r}
+datasets::anscombe %>% as_tibble()
+```
+
+
+## Tidy anscombe
+
+::: {.medium}
+```{r}
+(tidy_anscombe = datasets::anscombe %>%
+  pivot_longer(everything(), names_sep = 1, names_to = c("var", "group")) %>%
+  pivot_wider(id_cols = group, names_from = var, 
+              values_from = value, values_fn = list(value = list)) %>% 
+  unnest(cols = c(x,y)))
+```
+:::
+
+
+##
+
+::: {.medium}
+```{r}
+tidy_anscombe %>%
+  group_by(group) %>%
+  summarize(
+    mean_x = mean(x), mean_y = mean(y), 
+    sd_x = sd(x), sd_y = sd(y),
+    cor = cor(x,y), .groups = "drop"
+  )
+```
+:::
+
+
+##
+
+```{r fig.width=7, out.width="45%"}
+ggplot(tidy_anscombe, aes(x = x, y = y, color = as.factor(group))) +
+  geom_point(size=2) +
+  facet_wrap(~group) +
+  geom_smooth(method="lm", se=FALSE, fullrange=TRUE, formula = y~x) +
+  guides(color="none")
+```
+
+
+## DatasauRus
+
+::: {.small}
+```{r datasaurus}
+ggplot(
+  datasauRus::datasaurus_dozen, 
+  aes(x = x, y = y, color = dataset)
+) +
+  geom_point() +
+  facet_wrap(~dataset) +
+  guides(color="none")
+```
+:::
+
+##
+
+```{r echo=FALSE, fig.width=12, fig.height=5}
+datasauRus::datasaurus_dozen %>%
+  filter(dataset %in% c("bullseye", "dino", "star")) %>%
+  ggplot(
+    aes(
+      x = x, y = y, 
+      color = dataset
+    )
+  ) +
+    geom_point() +
+    facet_wrap(~dataset) +
+    guides(color="none")
+```
+
+
+##
+
+:::: {.columns .small}
+::: {.column width='33%'}
+```{r}
+datasauRus::datasaurus_dozen
+```
+:::
+::: {.column width='66%'}
+```{r}
+datasauRus::datasaurus_dozen %>%
+  group_by(dataset) %>%
+  summarize(mean_x = mean(x), mean_y = mean(y), 
+            sd_x = sd(x), sd_y = sd(y), 
+            cor = cor(x,y), .groups = "drop")
+```
+:::
+::::
+
+## Simpson's Paradox
+
+```{r include=FALSE}
+datasauRus::simpsons_paradox %>%
+  ggplot(aes(x=x, y=y, color=dataset)) +
+    geom_point() +
+    facet_wrap(vars(dataset))
+
+ctrs = matrix(
+  c(
+    25,15,
+    38,29,
+    48,58,
+    59,75,
+    80,83
+  ),
+  byrow=TRUE,
+  ncol=2
+)
+
+simpsons = datasauRus::simpsons_paradox %>%
+  filter(dataset == "simpson_2", x < 75) %>%
+  select(-dataset) %>%
+  mutate(., group = kmeans(., ctrs)$cluster %>% as.character()) 
+```
+
+
+```{r echo=FALSE} 
+simpsons %>%
+  ggplot(aes(x=x, y=y)) +
+    geom_point() +
+    geom_smooth(method="lm", se=FALSE, color="black", formula=y~x)
+```
+
+
+## Simpson's Paradox
+
+```{r echo = FALSE} 
+simpsons %>%
+  ggplot(aes(x=x, y=y, color=group)) +
+    geom_point() +
+    geom_smooth(method="lm", se=FALSE, formula=y~x) +
+    geom_smooth(method="lm", se=FALSE, color="black", formula=y~x) +
+    guides(color = "none")
+```
+
+
+# Designing effective visualizations
+
+## Gapminder
+
+::: {.center}
+<iframe width="1000" height="560" src="https://www.youtube.com/embed/OwII-dwh-bk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+</iframe>
+:::
+
+
+## Keep it simple
+
+
+<br/>
+
+:::: {.columns}
+::: {.column width='50%'} 
+```{r pie-3d, echo=FALSE, out.width="100%"}
+knitr::include_graphics("imgs/pie-3d.jpg")
+```
+:::
+::: {.column width='50%'}
+<br/> <br/>
+```{r pie-to-bar, echo=FALSE, out.width="100%"}
+d <- tribble(
+  ~category,                     ~value,
+  "Cutting tools"                , 0.03,
+  "Buildings and administration" , 0.22,
+  "Labor"                        , 0.31,
+  "Machinery"                    , 0.27,
+  "Workplace materials"          , 0.17
+)
+ggplot(d, aes(x = fct_reorder(category, value), y = value)) +
+  geom_col() +
+  theme_minimal() +
+  coord_flip() +
+  labs(x = "", y = "")
+```
+:::
+::::
+
+
+## Judging relative area
+
+
+::: {.aside}
+From Data to Viz caveat collection - [The issue with pie chart](https://www.data-to-viz.com/caveat/pie.html)
+:::
+
+
+```{r echo=FALSE, out.width="75%"}
+knitr::include_graphics("imgs/caveat_pie1.png")
+```
+
+. . .
+
+```{r echo=FALSE, out.width="75%"}
+knitr::include_graphics("imgs/caveat_pie2.png")
+```
+
+
+## Use color	to	draw	attention
+
+<br/> <br/>
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r echo=FALSE, out.width="100%"}
+d %>%
+  mutate(category = str_replace(category, " ", "\n")) %>%
+  ggplot(aes(x = category, y = value, fill = category)) +
+    geom_col() +
+    theme_minimal() +
+    labs(x = "", y = "") +
+    theme(legend.position = "none")
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE, out.width="100%"}
+ggplot(d, aes(x = fct_reorder(category, value), y = value, fill = category)) +
+  geom_col() +
+  theme_minimal() +
+  coord_flip() +
+  labs(x = "", y = "") +
+  scale_fill_manual(values = c("red", rep("gray", 4))) +
+  theme(legend.position = "none")
+```
+:::
+::::
+
+
+## Tell a story
+
+<br/>
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="98%"}
+knitr::include_graphics("imgs/time-series-story-1.png")
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="100%"}
+knitr::include_graphics("imgs/time-series-story-2.png")
+```
+:::
+::::
+
+
+::: {.aside}
+*Credit*: Angela Zoss and Eric Monson, Duke DVS
+:::
+
+## Leave out non-story details
+
+<br/> <br/>
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="100%"}
+knitr::include_graphics("imgs/vis_inj1.png")
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="96%"}
+knitr::include_graphics("imgs/vis_inj2.png")
+```
+:::
+::::
+
+
+::: {.aside}
+*Credit*: Angela Zoss and Eric Monson, Duke DVS
+:::
+
+
+## Ordering matter
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="80%"}
+knitr::include_graphics("imgs/vis_order1.png")
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="80%"}
+knitr::include_graphics("imgs/vis_order2.png")
+```
+:::
+::::
+
+
+::: {.aside}
+*Credit*: Angela Zoss and Eric Monson, Duke DVS
+:::
+
+
+## Clearly indicate missing data
+
+<br/>
+
+```{r echo=FALSE, fig.align="center", out.width="100%"}
+knitr::include_graphics("imgs/vis_missing.png")
+```
+
+::: {.aside}
+http://ivi.sagepub.com/content/10/4/271, Angela Zoss and Eric Monson, Duke DVS
+:::
+
+
+## Reduce cognitive load
+
+<br/>
+
+```{r echo=FALSE, fig.align="center", out.width="100%"}
+knitr::include_graphics("imgs/vis_text.png")
+```
+
+::: {.aside}
+http://www.storytellingwithdata.com/2012/09/some-finer-points-of-data-visualization.html
+:::
+
+## Use descriptive titles
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="80%"}
+knitr::include_graphics("imgs/vis-title-1.png")
+```
+:::
+::: {.column width='50%'}
+```{r echo=FALSE, fig.align="center", out.width="80%"}
+knitr::include_graphics("imgs/vis-title-2.png")
+```
+:::
+::::
+
+::: {.aside}
+*Credit*: Angela Zoss and Eric Monson, Duke DVS
+:::
+
+## Annotate figures
+
+<br/>
+
+```{r echo=FALSE, fig.align="center", out.width="80%"}
+knitr::include_graphics("imgs/vis_annotate.png")
+```
+
+
+::: {.aside}
+https://bl.ocks.org/susielu/23dc3082669ee026c552b85081d90976
+:::
+
+## All of the data doesn't tell a story
+
+```{r echo=FALSE, fig.align="center", out.width="60%"}
+knitr::include_graphics("imgs/vis_nyt1.png")
+```
+
+
+::: {.aside}
+[nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html](http://www.nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html)
+:::
+
+## All of the data doesn't tell a story
+
+
+```{r echo=FALSE, fig.align="center", out.width="60%"}
+knitr::include_graphics("imgs/vis_nyt2.png")
+```
+
+
+::: {.aside}
+[nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html](http://www.nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html)
+:::
+
+## All of the data doesn't tell a story
+
+```{r echo=FALSE, fig.align="center", out.width="60%"}
+knitr::include_graphics("imgs/vis_nyt3.png")
+```
+
+
+::: {.aside}
+[nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html](http://www.nytimes.com/interactive/2014/06/05/upshot/how-the-recession-reshaped-the-economy-in-255-charts.html)
+:::
+
+# Chart Remakes / Makeovers
+
+
+## The Why Axis - Gender Gap
+
+
+```{r echo=FALSE, fig.align="center", out.width="45%"}
+knitr::include_graphics("imgs/vis_gap.jpg")
+```
+
+::: {.aside}
+[thewhyaxis.info/gap-remake/](https://web.archive.org/web/20220121073030/thewhyaxis.info/gap-remake/)
+:::
+
+
+## The Why Axis - BLS
+
+
+```{r echo=FALSE, fig.align="center", out.width="60%"}
+knitr::include_graphics("imgs/vis_bls.gif")
+```
+
+::: {.aside}
+[thewhyaxis.info/defaults/](https://web.archive.org/web/20210805020658/thewhyaxis.info/defaults/)
+:::
+
+
+## Other Resources
+
+- Duke Library - Center for Data and Visualization Sciences - https://library.duke.edu/data/
+
+- Tidy tuesday - https://github.com/rfordatascience/tidytuesday
+
+- Flowing data - https://flowingdata.com/
+
+- Twitter - #dataviz, #tidytuesday
+
+- Books:
+  - Wickham, Navarro, Pedersen. ggplot2: Elegant Graphics for Data Analysis. (in progress) 3rd edition. Springer, 2021.
+  - Wilke. Fundamentals of Data Visualization. O’Reilly Media, 2019.
+  - Healy. Data Visualization: A Practical Introduction. Princeton University Press, 2018.
+  - Tufte. The visual display of quantitative information. 2nd edition. Connecticut Graphics Press, 2015.
+
+## Acknowledgments
+
+Above materials are derived in part from the following sources:
+
+* Visualization training materials developed by Angela Zoss and Eric Monson, [Duke DVS](http://libcms.oit.duke.edu/data/)
+

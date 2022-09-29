@@ -1,5 +1,6 @@
 ---
 title: "Lec 09 - Visualization with ggplot2"
+subtitle: "Lecture 09"
 author: "Dr. Colin Rundel"
 footer: "Sta 523 - Fall 2022"
 format:
