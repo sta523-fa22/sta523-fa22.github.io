@@ -113,6 +113,10 @@ schedule:
 
 - week: 5
   day: 3
+  lecture: "<i>Class canceled</i>"
+
+- week: 6
+  day: 1
   lecture: "Visualization Design"
   slides: Lec10
   screencast:
@@ -120,7 +124,7 @@ schedule:
   notes:
 
 - week: 6
-  day: 1
+  day: 3
   lecture: "Text processing & Regular expressions"
   slides:
   screencast:
@@ -133,15 +137,7 @@ schedule:
     link: https://r4ds.had.co.nz/strings.html
   notes: 
 
-- week: 6
-  day: 3
-  lecture: "Web scraping"
-  slides:
-  screencast:
-  readings:
-  - text: rvest - selector gadget vignette
-    link: https://rvest.tidyverse.org/articles/articles/selectorgadget.html
-  notes: 
+
 
 
 - week: 7
@@ -150,7 +146,13 @@ schedule:
 
 - week: 7
   day: 1
-  lecture: "TBD"
+  lecture: "Web scraping"
+  slides:
+  screencast:
+  readings:
+  - text: rvest - selector gadget vignette
+    link: https://rvest.tidyverse.org/articles/articles/selectorgadget.html
+  notes: 
 
 - week: 7
   day: 3
