@@ -384,6 +384,11 @@ ggplot(
 ```
 :::
 
+
+::: {.aside}
+See [here](https://www.autodesk.com/research/publications/same-stats-different-graphs) for the original paper
+:::
+
 ##
 
 ```{r echo=FALSE, fig.width=12, fig.height=5}
@@ -753,10 +758,10 @@ knitr::include_graphics("imgs/vis_bls.gif")
 - Twitter - #dataviz, #tidytuesday
 
 - Books:
-  - Wickham, Navarro, Pedersen. ggplot2: Elegant Graphics for Data Analysis. (in progress) 3rd edition. Springer, 2021.
-  - Wilke. Fundamentals of Data Visualization. O’Reilly Media, 2019.
-  - Healy. Data Visualization: A Practical Introduction. Princeton University Press, 2018.
-  - Tufte. The visual display of quantitative information. 2nd edition. Connecticut Graphics Press, 2015.
+  - Wickham, Navarro, Pedersen. *ggplot2: Elegant Graphics for Data Analysis*. 3rd edition. Springer, 2021.
+  - Wilke. *Fundamentals of Data Visualization*. O’Reilly Media, 2019.
+  - Healy. *Data Visualization: A Practical Introduction*. Princeton University Press, 2018.
+  - Tufte. *The visual display of quantitative information*. 2nd edition. Connecticut Graphics Press, 2015.
 
 ## Acknowledgments
 
