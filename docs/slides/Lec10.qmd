@@ -476,9 +476,8 @@ simpsons %>%
 
 ## Gapminder
 
-::: {.center}
-<iframe width="1000" height="560" src="https://www.youtube.com/embed/OwII-dwh-bk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-</iframe>
+::: {.center .large}
+[www.youtube.com/embed/OwII-dwh-bk](https://www.youtube.com/embed/OwII-dwh-bk)
 :::
 
 
