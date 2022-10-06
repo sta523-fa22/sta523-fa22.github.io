@@ -119,14 +119,14 @@ schedule:
   day: 1
   lecture: "Visualization Design"
   slides: Lec10
-  screencast:
+  screencast: https://youtu.be/w5ixi3r2EKI
   readings:
   notes:
 
 - week: 6
   day: 3
   lecture: "Text processing & Regular expressions"
-  slides:
+  slides: Lec11
   screencast:
   readings:
   - text: stringr Cheat Sheet, 
