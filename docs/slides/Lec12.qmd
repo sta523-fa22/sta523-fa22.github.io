@@ -1,0 +1,390 @@
+---
+title: "Web Scraping"
+subtitle: "Lecture 12"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=80
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center", fig.retina = 2, dpi = 150,
+  out.width = "100%"
+)
+
+library(magrittr)
+library(rvest)
+```
+
+#
+
+```{r echo=FALSE, out.width="40%"}
+knitr::include_graphics("imgs/hex-rvest.png")
+```
+
+
+## Hypertext Markup Language
+
+Most of the data on the web is still largely available as HTML - while it is structured (hierarchical) it often is not available in a form useful for analysis (flat / tidy).
+
+::: {.small}
+
+```html
+<html>
+  <head>
+    <title>This is a title</title>
+  </head>
+  <body>
+    <p align="center">Hello world!</p>
+    <br/>
+    <div class="name" id="first">John</div>
+    <div class="name" id="last">Doe</div>
+    <div class="contact">
+      <div class="home">555-555-1234</div>
+      <div class="home">555-555-2345</div>
+      <div class="work">555-555-9999</div>
+      <div class="fax">555-555-8888</div>
+    </div>
+  </body>
+</html>
+```
+
+:::
+
+
+## rvest
+
+::: {.medium}
+`rvest` is a package from the tidyverse that makes basic processing and manipulation of HTML data straight forward. It provides high level functions for interacting with html via the xml2 library.
+
+Core functions:
+
+* `read_html()` - read HTML data from a url or character string.
+
+* `html_elements()` / ~~`html_nodes()`~~ - select specified elements from the HTML document using CSS selectors (or xpath).
+
+* `html_element()` / ~~`html_node()`~~ - select a single element from the HTML document using CSS selectors (or xpath).
+
+* `html_table()` - parse an HTML table into a data frame.
+
+* `html_text()` / `html_text2()` - extract tag's text content.
+
+* `html_name` - extract a tag/element's name(s).
+
+* `html_attrs` - extract all attributes.
+
+* `html_attr` - extract attribute value(s) by name.
+:::
+
+## html, rvest, & xml2
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+html = 
+'<html>
+  <head>
+    <title>This is a title</title>
+  </head>
+  <body>
+    <p align="center">Hello world!</p>
+    <br/>
+    <div class="name" id="first">John</div>
+    <div class="name" id="last">Doe</div>
+    <div class="contact">
+      <div class="home">555-555-1234</div>
+      <div class="home">555-555-2345</div>
+      <div class="work">555-555-9999</div>
+      <div class="fax">555-555-8888</div>
+    </div>
+  </body>
+</html>'
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+read_html(html)
+```
+:::
+::::
+
+
+## Selecting elements
+
+```{r}
+read_html(html) %>% html_elements("p")
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("p") %>% html_text()
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("p") %>% html_name()
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("p") %>% html_attrs()
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("p") %>% html_attr("align")
+```
+
+
+## More selecting tags
+
+::: {.medium}
+```{r}
+read_html(html) %>% html_elements("div")
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+read_html(html) %>% html_elements("div") %>% html_text()
+```
+:::
+
+
+## Nesting tags
+
+```{r}
+read_html(html) %>% html_elements("body div")
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("body>div")
+```
+
+
+##
+
+
+```{r}
+read_html(html) %>% html_elements("body div div")
+```
+
+## css selectors
+
+We will be using a tool called selector gadget to help up identify the html elements of interest - it does this by constructing a css selector which can be used to subset the html document.
+
+Some examples of basic selector syntax is below,
+
+::: {.small}
+
+Selector          |  Example         | Description
+:-----------------|:-----------------|:--------------------------------------------------
+.class            |  `.title`        | Select all elements with class="title"
+#id               |  `#name`         | Select all elements with id="name"
+element           |  `p`             | Select all &lt;p&gt; elements
+element element   |  `div p`         | Select all &lt;p&gt; elements inside a &lt;div&gt; element
+element>element   |  `div > p`       | Select all &lt;p&gt; elements with &lt;div&gt; as a parent
+[attribute]       |  `[class]`       | Select all elements with a class attribute
+[attribute=value] |  `[class=title]` | Select all elements with class="title"
+
+:::
+
+
+There are also a number of additional combinators and pseudo-classes that improve flexibility, see examples [here](https://www.w3schools.com/cssref/css_selectors.asp).
+
+
+
+## CSS classes and ids
+
+```{r}
+read_html(html) %>% html_elements(".name")
+```
+
+
+. . .
+
+
+
+```{r}
+read_html(html) %>% html_elements("div.name")
+```
+
+
+. . .
+
+
+```{r}
+read_html(html) %>% html_elements("#first")
+```
+
+
+
+## Mixing it up
+
+```{r}
+read_html(html) %>% html_elements("[align]")
+```
+
+. . .
+
+```{r}
+read_html(html) %>% html_elements(".contact div")
+```
+
+
+## `html_text()` vs `html_text2()`
+
+```{r}
+html = read_html(
+  "<p>  
+    This is the first sentence in the paragraph.
+    This is the second sentence that should be on the same line as the first sentence.<br>This third sentence should start on a new line.
+  </p>"
+)
+```
+
+
+. . .
+
+```{r}
+html %>% html_text()
+html %>% html_text2()
+```
+
+##
+
+```{r}
+html %>% html_text() %>% cat(sep="\n")
+html %>% html_text2() %>% cat(sep="\n")
+```
+
+
+## html tables
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+html_table = 
+'<html>
+  <head>
+    <title>This is a title</title>
+  </head>
+  <body>
+    <table>
+      <tr> <th>a</th> <th>b</th> <th>c</th> </tr>
+      <tr> <td>1</td> <td>2</td> <td>3</td> </tr>
+      <tr> <td>2</td> <td>3</td> <td>4</td> </tr>
+      <tr> <td>3</td> <td>4</td> <td>5</td> </tr>
+    </table>
+  </body>
+</html>'
+```
+:::
+
+::: {.column width='50%'}
+```{r}
+read_html(html_table) %>%
+  html_elements("table") %>% 
+  html_table()
+```
+:::
+::::
+
+
+
+## SelectorGadget
+
+This is a javascript based tool that helps you interactively build an appropriate CSS selector for the content you are interested in.
+
+
+::: {.center}
+```{r echo=FALSE, out.width="45%"}
+knitr::include_graphics('imgs/selectorgadget.png')
+```
+[selectorgadget.com](http://selectorgadget.com)
+:::
+
+
+# Web scraping considerations
+
+
+## "Can you?" vs "Should you?"
+
+```{r echo=FALSE, out.width="60%"}
+knitr::include_graphics("imgs/ok-cupid-1.png")
+```
+
+::: {.aside}
+Source: Brian Resnick, [Researchers just released profile data on 70,000 OkCupid users without permission](https://www.vox.com/2016/5/12/11666116/70000-okcupid-users-data-release), Vox.
+:::
+
+
+## "Can you?" vs "Should you?"
+
+```{r echo=FALSE, out.width="70%"}
+knitr::include_graphics("imgs/ok-cupid-2.png")
+```
+
+
+## Scraping permission & `robots.txt`
+
+There is a standard for communicating to users if it is acceptable to automatically scrape a website via the [robots exclusion standard](https://en.wikipedia.org/wiki/Robots_exclusion_standard) or `robots.txt`.
+
+You can find examples at all of your favorite websites: [google](https://www.google.com/robots.txt), [facebook](https://facebook.com/robots.txt), etc.
+
+
+. . .
+
+
+These files are meant to be machine readable, but the `polite` package can handle this for us (and much more).
+
+
+::: {.medium}
+```{r}
+polite::bow("http://google.com")
+polite::bow("http://facebook.com")
+```
+:::
+
+
+## Example - Rotten Tomatoes
+
+For the movies listed in **Popular Streaming Movies** list on `rottentomatoes.com` create a data frame with the Movies' titles, their tomatometer score, and whether the movie is fresh or rotten, and the movie's url.
+
+
+## Exercise 1
+
+Using the url for each movie, now go out and grab the number of reviews, the runtime, and number of user ratings.
+
+If you finish that you can then try to scrape the MPAA rating and the audience score,.

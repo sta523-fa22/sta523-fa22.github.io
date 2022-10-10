@@ -127,7 +127,7 @@ schedule:
   day: 3
   lecture: "Text processing & Regular expressions"
   slides: Lec11
-  screencast:
+  screencast: https://youtu.be/EpTWf7qXUeA
   readings:
   - text: stringr Cheat Sheet, 
     link: https://github.com/rstudio/cheatsheets/blob/master/strings.pdf
@@ -147,7 +147,7 @@ schedule:
 - week: 7
   day: 1
   lecture: "Web scraping"
-  slides:
+  slides: Lec12
   screencast:
   readings:
   - text: rvest - selector gadget vignette
