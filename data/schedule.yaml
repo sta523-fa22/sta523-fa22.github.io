@@ -148,7 +148,7 @@ schedule:
   day: 1
   lecture: "Web scraping"
   slides: Lec12
-  screencast:
+  screencast: https://youtu.be/IBlvw2LgS4A
   readings:
   - text: rvest - selector gadget vignette
     link: https://rvest.tidyverse.org/articles/articles/selectorgadget.html
@@ -161,7 +161,7 @@ schedule:
   screencast:
   readings:
   - text: httr2
-    link: https://httr2.tidyverse.org/
+    link: https://httr2.r-lib.org/
   - text: httr - Best practices for API packages
     link: https://httr.r-lib.org/articles/api-packages.html
 
