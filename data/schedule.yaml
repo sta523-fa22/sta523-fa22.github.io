@@ -158,7 +158,7 @@ schedule:
   day: 3
   lecture: "Web APIs"
   slides: Lec13
-  screencast:
+  screencast: https://youtu.be/sXt_EaXgbiU
   readings:
   - text: httr2
     link: https://httr2.r-lib.org/
@@ -173,6 +173,8 @@ schedule:
   readings:
   - text: Project-oriented workflow
     link: https://rstats.wtf/project-oriented-workflow.html
+  - text: fs comparison
+    link: https://fs.r-lib.org/articles/function-comparisons.html
   notes: 
 
 - week: 8
