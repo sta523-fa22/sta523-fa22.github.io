@@ -50,7 +50,7 @@ From [Chp 9](https://automatetheboringstuff.com/2e/chapter9/) of Automate the Bo
 
 Paths can either be absolute or relative, and the difference is very important. For portability reasons you should almost never use absolute paths.
 
-Absolute path examples:
+*Absolute path examples*:
 
 ```shell
 /var/ftp/pub
@@ -58,14 +58,13 @@ Absolute path examples:
 /boot/grub/grub.conf
 ```
 
-Relative path examples:
+*Relative path examples*:
 
 ```shell
 Sta523/filesystem/
 data/access.log
 filesystem/nelle/pizza.cfg
 ```
-
 
 
 ## Special directories
@@ -80,6 +79,10 @@ dir(path = "data/")
 dir(path = "data/", all.files = TRUE)
 ```
 
+::: {.aside}
+Files and directorie starting with `.` are hidden by default, in the terminal use `ls -a`
+:::
+
 ##
 
 ```{r}
@@ -91,11 +94,13 @@ dir(path = "../../")
 
 ## Home directory and `~`
 
-Tilde (`~`) is a shortcut that expands to the name of your home directory on unix-like systems. If you append a user's login to `~`, it then refers to that user's home directory (e.g. `~cr173`).
+Tilde (`~`) is a shortcut that expands to the name of your home directory on unix-like systems.
 
 ```{r}
 dir(path = "~/")
 ```
+
+If you append a user's login to `~`, it then refers to that user's home directory (e.g. `~cr173`).
 
 ## Why `~`?
 
@@ -103,6 +108,9 @@ Below is the keyboard from an [ADM-3A](https://en.wikipedia.org/wiki/ADM-3A) ter
 
 ![](imgs/ADM3A.jpg){fig-align="center"}
 
+::: {.aside}
+See ["Stop Writing Dead Programs" by Jack Rusher (Strange Loop 2022)](https://www.youtube.com/watch?v=8Ab3ArE8W3s)
+:::
 
 
 ## Working directories
@@ -137,12 +145,16 @@ Source: Jenny Bryan's [Zen and the Art of Workflow Maintenance](https://speakerd
 
 Just like R, RStudio also makes use of a working directory for each of your sessions -  we haven't had to discuss these yet because when you use an RStudio project, the working directory is automatically set to the directory containing the `Rproj` file.
 
+. . .
+
 This makes your project portable as all you need to do is to send the project folder to a collaborator (or push to GitHub) and they can open the project file and have identical *relative* path structure.
 
 
 ## `here`
 
 Thus far we've dealt with mostly simple project organizational structures - all the code has lived in the root directory and sometimes we've had a separate `data` directory for other files. As organization gets more complex to known what the working directory will be for a given script or RMarkdown document.
+
+. . .
 
 `here` is a package that tries to simplify this process by identifying the root of your project for you using simple heuristics and then providing relative paths from that root directory to everything else in your project.
 
