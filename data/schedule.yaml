@@ -168,7 +168,7 @@ schedule:
 - week: 8
   day: 1
   lecture: "filesystems, Dennys & LQ scraping"
-  screencast:
+  screencast: https://youtu.be/CZGMFECybmE
   slides: Lec14
   readings:
   - text: Project-oriented workflow
@@ -180,7 +180,7 @@ schedule:
 - week: 8
   day: 3
   lecture: "make"
-  slides:
+  slides: Lec15
   screencast:
   readings:
   - text: Minimal make
