@@ -1,0 +1,678 @@
+---
+title: "databases & dplyr"
+subtitle: "Lecture 16"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=70
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center", fig.retina = 2, dpi = 150,
+  out.width = "100%"
+)
+
+library(dplyr)
+```
+
+# The why of databases
+
+
+## Numbers every programmer should know
+
+| Task                                | Timing (ns)       | Timing (μs)       |
+|-------------------------------------|-------------------|-------------------|
+| L1 cache reference                  | 0.5               |                   |
+| L2 cache reference                  | 7                 |                   |
+| Main memory reference               | 100               | 0.1               |
+| Random seek SSD                     | 150,000           | 150               |
+| Read 1 MB sequentially from memory  | 250,000           | 250               |
+| Read 1 MB sequentially from SSD     | 1,000,000         | 1,000             |
+| Disk seek                           | 10,000,000        | 10,000            |  
+| Read 1 MB sequentially from disk    | 20,000,000        | 20,000            |
+| Send packet CA->Netherlands->CA     | 150,000,000       | 150,000           |
+
+
+::: {.aside}
+From [jboner/latency.txt](https://gist.github.com/jboner/2841832) & [sirupsen/napkin-math](https://github.com/sirupsen/napkin-math) <br/>
+Jeff Dean's original [talk](http://static.googleusercontent.com/media/research.google.com/en/us/people/jeff/stanford-295-talk.pdf) 
+:::
+
+
+## Implications for big data
+
+Lets imagine we have a *10 GB* flat data file and that we want to select certain rows based on a particular criteria. This requires a sequential read across the entire data set.
+
+
+| File Location    | Performance                        | Time        |
+|:-----------------|:-----------------------------------|:------------|
+| in memory        | $10~GB \times (250~\mu s / 1~MB)$  | 2.5 seconds |
+| on disk (SSD)    | $10~GB \times (1~ms / 1~MB)$       | 10 seconds  |
+| on disk (HD)     | $10~GB \times (20~ms / 1~MB)$      | 200 seconds |
+
+<br/>
+
+This is just for *reading* sequential data, if we make any modifications (*writing*) or the data is fragmented things are much worse. 
+
+
+## Blocks
+
+::: {.center}
+*Cost*: Disk << SSD <<< Memory
+:::
+
+<br/>
+
+::: {.center}
+*Speed*: Disk <<< SSD << Memory
+:::
+
+
+<br/>
+
+So usually possible to grow our disk storage to accommodate our data. However, memory is usually the limiting resource, and if we can't fit everything into memory?
+
+<br/>
+
+Create *blocks* - group related data (i.e. rows) and read in multiple rows at a time. Optimal size will depend on the task and the properties of the disk.
+
+
+
+## Linear vs Binary Search
+
+Even with blocks, any kind of querying / subsetting of rows requires a linear search, which requires $\mathcal{O}(N)$ accesses where $N$ is the number of blocks.
+
+<br/>
+
+We can do much better if we are careful about how we structure our data, specifically sorting' some (or all) of the columns. 
+
+* Sorting is expensive, $\mathcal{O}(N \log N)$, but it only needs to be done once. 
+
+* After sorting, we can use a binary search for any subsetting tasks $\left( \mathcal{O}(\log N) \right)$ ).
+
+* These "sorted" columns are known as *indexes*.
+
+* Indexes require additional storage, but usually small enough to be kept in memory while blocks stay on disk.
+
+
+## and then?
+
+This is just barely scratching the surface,
+
+* Efficiency gains are not just for disk, access is access
+
+* In general, trade off between storage and efficiency
+
+* Reality is a lot more complicated for everything mentioned so far, lots of very smart people have spent a lot of time thinking about and implementing tools
+
+* Different tasks with different requirements require different implementations and have different criteria for optimization
+
+
+# Databases
+
+## R & databases - the DBI package
+
+Low level package for interfacing R with Database management systems (DBMS) that provides a common interface to achieve the following functionality:
+
+* connect/disconnect from DB
+* create and execute statements in the DB
+* extract results/output from statements
+* error/exception handling
+* information (meta-data) from database objects
+* transaction management (optional)
+
+
+::: {.aside}
+See [r-dbi.org](https://www.r-dbi.org/) for more details
+:::
+
+
+## RSQLite
+
+Provides the implementation necessary to use DBI to interface with an SQLite database.
+
+```r
+library(RSQLite)
+```
+
+this package also loads the necessary DBI functions as well.
+
+. . .
+
+<br/>
+
+Once loaded we can create a connection to our database,
+
+```r
+con = dbConnect(RSQLite::SQLite(), ":memory:")
+str(con)
+
+## Formal class 'SQLiteConnection' [package "RSQLite"] with 5 slots
+##   ..@ Id                 :<externalptr> 
+##   ..@ dbname             : chr ":memory:"
+##   ..@ loadable.extensions: logi TRUE
+##   ..@ flags              : int 6
+##   ..@ vfs                : chr ""
+```
+
+
+## Example Table
+ 
+```r
+employees = tibble(
+  name   = c("Alice","Bob","Carol","Dave","Eve","Frank"),
+  email  = c("alice@company.com", "bob@company.com",
+             "carol@company.com", "dave@company.com",
+             "eve@company.com",   "frank@comany.com"),
+  salary = c(52000, 40000, 30000, 33000, 44000, 37000),
+  dept   = c("Accounting", "Accounting","Sales",
+             "Accounting","Sales","Sales"),
+)
+
+dbWriteTable(con, name = "employees", value = employees)
+## [1] TRUE
+
+dbListTables(con)
+## [1] "employees"
+```
+
+
+## Removing Tables
+
+```r
+dbWriteTable(con, "employs", employees)
+## [1] TRUE
+
+dbListTables(con)
+## [1] "employees" "employs"
+
+dbRemoveTable(con,"employs")
+## [1] TRUE
+
+dbListTables(con)
+## [1] "employees"
+```
+
+
+## Querying Tables
+
+Databases queries are transactional (see [ACID](https://en.wikipedia.org/wiki/ACID)) and are broken up into 3 steps:
+
+```r
+(res = dbSendQuery(con, "SELECT * FROM employees"))
+## <SQLiteResult>
+##   SQL  SELECT * FROM employees
+##   ROWS Fetched: 0 [incomplete]
+##        Changed: 0
+
+dbFetch(res)
+##    name             email salary       dept
+## 1 Alice alice@company.com  52000 Accounting
+## 2   Bob   bob@company.com  40000 Accounting
+## 3 Carol carol@company.com  30000      Sales
+## 4  Dave  dave@company.com  33000 Accounting
+## 5   Eve   eve@company.com  44000      Sales
+## 6 Frank  frank@comany.com  37000      Sales
+
+dbClearResult(res)
+## [1] TRUE
+```
+
+
+## For cenvenience
+
+There is also `dbGetQuery()` for simpler use cases,
+
+```r
+(res = dbGetQuery(con, "SELECT * FROM employees"))
+##    name             email salary       dept
+## 1 Alice alice@company.com  52000 Accounting
+## 2   Bob   bob@company.com  40000 Accounting
+## 3 Carol carol@company.com  30000      Sales
+## 4  Dave  dave@company.com  33000 Accounting
+## 5   Eve   eve@company.com  44000      Sales
+## 6 Frank  frank@comany.com  37000      Sales
+```
+
+
+## Creating tables
+
+```r
+dbCreateTable(con, "iris", iris)
+
+(res = dbSendQuery(con, "select * from iris"))
+## <SQLiteResult>
+##   SQL  select * from iris
+##   ROWS Fetched: 0 [complete]
+##        Changed: 0
+
+dbFetch(res)
+## [1] Sepal.Length Sepal.Width  Petal.Length Petal.Width  Species     
+## <0 rows> (or 0-length row.names)
+```
+
+. . .
+
+```r
+dbFetch(res) %>% as_tibble()
+## # A tibble: 0 × 5
+## # … with 5 variables: Sepal.Length <dbl>, Sepal.Width <dbl>, Petal.Length <dbl>,
+## #   Petal.Width <dbl>, Species <chr>
+
+dbClearResult(res)
+```
+
+
+## Adding to tables
+
+::: {.medium}
+```r
+dbAppendTable(con, name = "iris", value = iris)
+## [1] 150
+## Warning message:
+## Factors converted to character 
+```
+:::
+
+. . .
+
+::: {.medium}
+```r
+res = dbSendQuery(con, "select * from iris")
+
+dbFetch(res) %>% as_tibble()
+## # A tibble: 150 x 5
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           <dbl>       <dbl>        <dbl>       <dbl> <chr>  
+##  1          5.1         3.5          1.4         0.2 setosa 
+##  2          4.9         3            1.4         0.2 setosa 
+##  3          4.7         3.2          1.3         0.2 setosa 
+##  4          4.6         3.1          1.5         0.2 setosa 
+##  5          5           3.6          1.4         0.2 setosa 
+##  6          5.4         3.9          1.7         0.4 setosa 
+##  7          4.6         3.4          1.4         0.3 setosa 
+##  8          5           3.4          1.5         0.2 setosa 
+##  9          4.4         2.9          1.4         0.2 setosa 
+## 10          4.9         3.1          1.5         0.1 setosa 
+## # … with 140 more rows
+```
+:::
+
+
+## Ephemeral results
+
+```r
+res
+## <SQLiteResult>
+##   SQL  select * from iris
+##   ROWS Fetched: 150 [complete]
+##        Changed: 0
+
+dbFetch(res) %>% as_tibble()
+## # A tibble: 0 x 5
+## # … with 5 variables: Sepal.Length <dbl>, Sepal.Width <dbl>, Petal.Length <dbl>, Petal.Width <dbl>,
+## #   Species <chr>
+
+dbClearResult(res)
+```
+
+
+## Closing the connection
+
+```r
+con
+## <SQLiteConnection>
+##   Path: :memory:
+##   Extensions: TRUE
+
+dbDisconnect(con)
+## [1] TRUE
+
+con
+## <SQLiteConnection>
+##   DISCONNECTED
+```
+
+
+# dplyr & databases
+
+
+## Creating a database 
+
+```{r include=FALSE}
+unlink("flights.sqlite")
+```
+
+::: {.medium}
+```{r}
+db = DBI::dbConnect(RSQLite::SQLite(), "flights.sqlite")
+( flight_tbl = dplyr::copy_to(
+    db, nycflights13::flights, name = "flights", temporary = FALSE) )
+```
+:::
+
+
+## What have we created?
+
+All of this data now lives in the database on the *filesystem* not in *memory*,
+
+```{r}
+pryr::object_size(db)
+pryr::object_size(flight_tbl)
+```
+
+```{r}
+pryr::object_size(nycflights13::flights)
+```
+
+. . .
+
+```{r}
+fs::dir_info(glob = "*.sqlite")
+```
+
+
+## What is `flight_tbl`?
+
+::: {.medium}
+```{r}
+class(nycflights13::flights)
+class(flight_tbl)
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r}
+str(flight_tbl)
+```
+:::
+
+
+## Accessing existing tables
+
+```{r}
+(dplyr::tbl(db, "flights"))
+```
+
+
+## Using dplyr with sqlite 
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+(oct_21 = flight_tbl %>%
+   filter(month == 10, day == 21) %>%
+   select(origin, dest, tailnum)
+)
+```
+:::
+::: {.column width='50%' .fragment}
+```{r}
+dplyr::collect(oct_21)
+```
+:::
+::::
+
+
+
+## Laziness
+
+dplyr / dbplyr uses lazy evaluation as much as possible, particularly when working with non-local backends.
+
+* When building a query, we don't want the entire table, often we want just enough to check if our query is working / makes sense.
+
+* Since we would prefer to run one complex query over many simple queries, laziness allows for verbs to be strung together.
+
+* Therefore, by default `dplyr`
+
+    * won't connect and query the database until absolutely necessary (e.g. show output),
+
+    * and unless explicitly told to, will only query a handful of rows to give a sense of what the result will look like.
+    
+    * we can force evaluation via `compute()`, `collect()`, or `collapse()`
+
+
+## A crude benchmark
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+system.time({
+  (oct_21 = flight_tbl %>%
+    filter(month == 10, day == 21) %>%
+    select(origin, dest, tailnum)
+  )
+})
+```
+:::
+::: {.column width='50%'}
+```{r}
+system.time({
+  print(oct_21) %>% 
+    capture.output() %>% 
+    invisible()
+})
+```
+:::
+::::
+
+. . .
+
+<br/>
+
+:::: {.columns}
+::: {.column width='50%'}
+```{r}
+system.time({
+  dplyr::collect(oct_21) %>% 
+    capture.output() %>% 
+    invisible()
+})
+```
+:::
+::::
+
+
+
+
+## dplyr -> SQL - `show_query()`
+
+```{r}
+class(oct_21)
+```
+
+```{r}
+show_query(oct_21)
+```
+
+## More complex queries
+
+:::: {.columns .medium}
+::: {.column width='50%'}
+```{r}
+oct_21 %>% 
+  group_by(origin, dest) %>% 
+  summarize(n=n(), .groups = "drop")
+```
+:::
+::: {.column width='50%' .fragment}
+```{r}
+oct_21 %>% 
+  group_by(origin, dest) %>% 
+  summarize(n=n(), .groups = "drop") %>% 
+  show_query()
+```
+:::
+::::
+
+##
+
+```{r}
+oct_21 %>% 
+  count(origin, dest) %>% 
+  show_query()
+```
+
+## SQL Translation 
+
+In general, dplyr / dbplyr knows how to translate basic math, logical, and summary functions from R to SQL. dbplyr has a function, `translate_sql()`, that lets you experiment with how R functions are translated to SQL. 
+
+. . .
+
+::: {.medium}
+```{r error=TRUE}
+dbplyr::translate_sql(x == 1 & (y < 2 | z > 3))
+dbplyr::translate_sql(x ^ 2 < 10)
+dbplyr::translate_sql(x %% 2 == 10)
+```
+:::
+
+. . .
+
+::: {.medium}
+```{r error=TRUE}
+dbplyr::translate_sql(mean(x))
+dbplyr::translate_sql(mean(x, na.rm=TRUE))
+```
+:::
+
+##
+
+::: {.medium}
+```{r error=TRUE}
+dbplyr::translate_sql(sd(x))
+dbplyr::translate_sql(paste(x,y))
+dbplyr::translate_sql(cumsum(x))
+dbplyr::translate_sql(lag(x))
+```
+::::
+
+## Dialectic variations?
+
+By default `dbplyr::translate_sql()` will translate R / dplyr code into ANSI SQL, if we want to see results specific to a certain database we can pass in a connection object,
+
+```{r}
+dbplyr::translate_sql(sd(x), con = db)
+dbplyr::translate_sql(paste(x,y), con = db)
+dbplyr::translate_sql(cumsum(x), con = db)
+dbplyr::translate_sql(lag(x), con = db)
+```
+
+
+## Complications?
+
+```{r error=TRUE}
+oct_21 %>% mutate(tailnum_n_prefix = grepl("^N", tailnum))
+```
+
+```{r}
+oct_21 %>% mutate(tailnum_n_prefix = grepl("^N", tailnum)) %>% show_query()
+```
+
+
+# SQL -> R / dplyr
+
+
+## Running SQL queries against R objects
+
+There are two packages that implement this in R which take very different approaches,
+
+* [`tidyquery`](https://github.com/ianmcook/tidyquery) - this package parses your SQL code using the `queryparser` package and then translates the result into R / dplyr code.
+
+* [`sqldf`](https://github.com/ggrothendieck/sqldf) - transparently creates a database with teh data and then runs the query using that database. Defaults to SQLite but other backends are available.
+
+
+## tidyquery
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+data(flights, package = "nycflights13")
+
+tidyquery::query(
+  "SELECT origin, dest, COUNT(*) AS n
+   FROM flights
+   WHERE month = 10 AND day = 21
+   GROUP BY origin, dest"
+)
+```
+:::
+::: {.column width='50%'}
+```{r}
+flights %>%
+  tidyquery::query(
+    "SELECT origin, dest, COUNT(*) AS n
+     WHERE month = 10 AND day = 21
+     GROUP BY origin, dest"
+  ) %>%
+  arrange(desc(n))
+```
+:::
+::::
+
+
+## Translating to dplyr
+
+```{r}
+tidyquery::show_dplyr(
+  "SELECT origin, dest, COUNT(*) AS n
+   FROM flights
+   WHERE month = 10 AND day = 21
+   GROUP BY origin, dest"
+)
+```
+
+
+## sqldf
+
+:::: {.columns .small}
+::: {.column width='50%'}
+```{r}
+sqldf::sqldf(
+  "SELECT origin, dest, COUNT(*) AS n
+   FROM flights
+   WHERE month = 10 AND day = 21
+   GROUP BY origin, dest"
+)
+```
+:::
+::: {.column width='50%'}
+```{r}
+sqldf::sqldf(
+  "SELECT origin, dest, COUNT(*) AS n
+   FROM flights
+   WHERE month = 10 AND day = 21
+   GROUP BY origin, dest"
+) %>%
+  as_tibble() %>%
+  arrange(desc(n))
+```
+:::
+::::
+
+
+## Closing thoughts
+
+The ability of dplyr to translate from R expression to SQL is an incredibly powerful tool making your data processing workflows portable across a wide variety of data backends.
+
+Some tools and ecosystems that are worth learning about:
+
+* Spark - [sparkR](https://spark.apache.org/docs/latest/api/R/index.html), [spark SQL](https://spark.apache.org/docs/latest/api/sql/index.html), [sparklyr](https://spark.rstudio.com/)
+
+* [DuckDB](https://duckdb.org/)
+
+* Apache [Arrow](https://arrow.apache.org/)

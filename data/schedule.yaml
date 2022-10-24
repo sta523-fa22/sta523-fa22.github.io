@@ -181,7 +181,7 @@ schedule:
   day: 3
   lecture: "make"
   slides: Lec15
-  screencast:
+  screencast: https://youtu.be/hasIAfs-mok
   readings:
   - text: Minimal make
     link: https://kbroman.org/minimal_make/
@@ -191,21 +191,8 @@ schedule:
 
 - week: 9
   day: 1
-  lecture: "Databases & SQL"
-  slides:
-  screencast:
-  readings:
-  - text: SQLite Syntax
-    link: https://www.sqlite.org/lang.html
-  - text: Modern SQL Style Guide
-    link: https://gist.github.com/mattmc3/38a85e6a4ca1093816c08d4815fbebfb
-  notes: 
-  
-
-- week: 9
-  day: 3
-  lecture: "SQL <--> dplyr"
-  slides:
+  lecture: "Databases, dplyr, & SQL"
+  slides: Lec16
   screencast:
   readings:
   - text: SQL Translation
@@ -213,6 +200,20 @@ schedule:
   - text: dbplyr Vignette
     link: https://cran.r-project.org/web/packages/dbplyr/vignettes/dbplyr.html
 
+
+  notes: 
+  
+
+- week: 9
+  day: 3
+  lecture: "Databases & SQLite"
+  slides:
+  screencast:
+  readings:
+  - text: SQLite Syntax
+    link: https://www.sqlite.org/lang.html
+  - text: Modern SQL Style Guide
+    link: https://gist.github.com/mattmc3/38a85e6a4ca1093816c08d4815fbebfb
 
 - week: 10
   day: 1
