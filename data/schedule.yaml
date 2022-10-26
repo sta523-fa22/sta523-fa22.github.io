@@ -191,7 +191,7 @@ schedule:
 
 - week: 9
   day: 1
-  lecture: "Databases, dplyr, & SQL"
+  lecture: "Databases & dplyr"
   slides: Lec16
   screencast:
   readings:
@@ -206,7 +206,7 @@ schedule:
 
 - week: 9
   day: 3
-  lecture: "Databases & SQLite"
+  lecture: "Databases, SQL, & SQLite"
   slides:
   screencast:
   readings:
