@@ -193,7 +193,7 @@ schedule:
   day: 1
   lecture: "Databases & dplyr"
   slides: Lec16
-  screencast:
+  screencast: https://youtu.be/WnPOOg_oWNM
   readings:
   - text: SQL Translation
     link: https://cran.r-project.org/web/packages/dbplyr/vignettes/sql-translation.html
@@ -206,8 +206,8 @@ schedule:
 
 - week: 9
   day: 3
-  lecture: "Databases, SQL, & SQLite"
-  slides:
+  lecture: "SQL & Indexes"
+  slides: Lec17
   screencast:
   readings:
   - text: SQLite Syntax
