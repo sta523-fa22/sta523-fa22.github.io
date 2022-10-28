@@ -996,7 +996,7 @@ Run Time: real 0.023 user 0.022521 sys 0.000411
 :::
 
 ::: {.column width='50%'}
-```{sqlite}
+```sqlite
 sqlite> EXPLAIN QUERY PLAN SELECT carrier, count(*) FROM flights 
 GROUP BY carrier;
 
