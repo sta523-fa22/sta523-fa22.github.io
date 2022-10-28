@@ -462,7 +462,7 @@ Frank  frank@comany.com   37000.0  Sales       919 555-4444
 
 Note that SQLite does not support directly support an `OUTER JOIN` (e.g a full join in dplyr) or a `RIGHT JOIN`.
 
-- A `RIGHT JOIN` can be achieved by switch the two tables (i.e. A right join B is equivalent to B left join A)
+- A `RIGHT JOIN` can be achieved by swapping the two tables (i.e. A right join B is equivalent to B left join A)
 
 - An `OUTER JOIN` can be achieved via using `UNION ALL` with both left joins (A on B and B on A)
 
