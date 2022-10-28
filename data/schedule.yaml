@@ -199,8 +199,6 @@ schedule:
     link: https://cran.r-project.org/web/packages/dbplyr/vignettes/sql-translation.html
   - text: dbplyr Vignette
     link: https://cran.r-project.org/web/packages/dbplyr/vignettes/dbplyr.html
-
-
   notes: 
   
 
