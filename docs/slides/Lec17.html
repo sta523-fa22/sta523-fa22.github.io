@@ -1965,13 +1965,11 @@ Frank       frank@comany.com   37000.0     Sales       37000.0     0.0
 <span id="cb62-21"><a href="#cb62-21"></a>YV       601</span>
 <span id="cb62-22"><a href="#cb62-22"></a>Run Time: real 0.023 user 0.022521 sys 0.000411</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column" style="width:50%;">
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource sqlite number-lines code-with-copy"><code class="sourceCode"><span id="cb63-1"><a href="#cb63-1"></a>sqlite&gt; EXPLAIN QUERY PLAN SELECT carrier, count(*) FROM flights </span>
+<div class="sourceCode" id="cb63"><pre class="sourceCode numberSource sqlite number-lines code-with-copy"><code class="sourceCode"><span id="cb63-1"><a href="#cb63-1"></a>sqlite&gt; EXPLAIN QUERY PLAN SELECT carrier, count(*) FROM flights </span>
 <span id="cb63-2"><a href="#cb63-2"></a>GROUP BY carrier;</span>
 <span id="cb63-3"><a href="#cb63-3"></a></span>
 <span id="cb63-4"><a href="#cb63-4"></a>QUERY PLAN</span>
 <span id="cb63-5"><a href="#cb63-5"></a>`--SCAN flights USING COVERING INDEX flight_carrier</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </div>
 </div>
 </section>

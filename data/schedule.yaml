@@ -206,7 +206,7 @@ schedule:
   day: 3
   lecture: "SQL & Indexes"
   slides: Lec17
-  screencast:
+  screencast: https://youtu.be/YnSBxYYB7eg
   readings:
   - text: SQLite Syntax
     link: https://www.sqlite.org/lang.html
