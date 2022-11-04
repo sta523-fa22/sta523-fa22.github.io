@@ -1,0 +1,156 @@
+---
+title: Shiny
+subtitle: "Lecture 18"
+author: "Dr. Colin Rundel"
+footer: "Sta 523 - Fall 2022"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+    self-contained: true
+execute: 
+  echo: true
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+options(
+  htmltools.dir.version = FALSE, # for blogdown
+  width=70
+)
+
+knitr::opts_chunk$set(
+  fig.align = "center", fig.retina = 2, dpi = 150,
+  out.width = "100%"
+)
+
+library(dplyr)
+```
+
+
+#
+
+![](imgs/hex-shiny.png){fig-align="center" width="66%"}
+
+## Shiny
+
+> Shiny is an R package that makes it easy to build interactive web apps straight from R. You can host standalone apps on a webpage or embed them in R Markdown documents or build dashboards. You can also extend your Shiny apps with CSS themes, htmlwidgets, and JavaScript actions.
+
+## Shiny App
+
+<br/>
+
+::: columns
+::: {.column width="40%" .larger}
+Server
+
+::: {style="border: 2px solid; border-radius: 5px; text-align:center; font-size: 90px; height: 250px"}
+`r fontawesome::fa("r-project")` + `r fontawesome::fa("server")`
+:::
+:::
+
+::: {.column width="20%"}
+::: {style="text-align: center; font-size: 90px; padding-top: 20px"}
+<br/>⇄
+:::
+:::
+
+
+::: {.column width="40%" .larger}
+Client / Browser
+
+::: {style="border: 2px solid; border-radius: 5px; text-align: center; height: 250px"}
+::: {style="font-size: 90px"}
+`r fontawesome::fa("file-code")`
+:::
+
+::: {style="font-size: 50px"}
+`r fontawesome::fa("html5")` + `r fontawesome::fa("js")` + `r fontawesome::fa("css3")`
+:::
+:::
+
+:::
+:::
+
+## Anatomy of an App
+
+```{r shiny-anatomy}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "|3-8|4|6-8"
+library(shiny)
+
+shinyApp(
+  ui = list(),
+  
+  server = function(input, output, session) {
+  
+  }
+)
+```
+
+
+## App background
+
+I've brought a coin with me to class and I'm claiming that it is fair (equally likely to come up heads or tails).
+
+I flip the coin 10 times and we observe 7 heads and 3 tails, should you believe me that the coin is fair? Or more generally what should you believe about the coin's fairness now?
+
+
+## Model
+
+Let $y$ be the number of successes (heads) in $n$ trials then,
+
+**Likelihood:**
+$$
+\begin{aligned}
+y|n,p &\sim \text{Binom}(n,p) \\
+f(y|n,p) &= {n \choose y} p^y(1-p)^{n-y} \\
+         &= \frac{n!}{y!(n-y)!} p^y(1-p)^{n-y}
+\end{aligned}
+$$
+
+. . .
+
+**Prior:**
+$$
+\begin{aligned}
+p &\sim \text{Beta}(a,b) \\
+\pi(p|a,b) &= \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} p^{a-1} (1-p)^{b-1}
+\end{aligned}
+$$
+
+## Posterior
+
+From the definition of Bayes' rule:
+
+$$
+\begin{aligned}
+f(p|y,n,a,b) 
+  &= \frac{f(y|n,p)}{\int^\infty_{-\infty} f(y|n,p) \, dp} \pi(p|a,b) \\
+  &\propto f(y|n,p) \, \pi(p|a,b) \\
+\end{aligned}
+$$
+
+. . .
+
+We then plug in the likelihood and prior and then simplify by dropping any terms not involving $p$,
+
+$$
+\begin{aligned}
+f(p|y,n,a,b) 
+  &\propto \left( \frac{n!}{y!(n-y)!} p^y(1-p)^{n-y} \right)
+    \left(\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)} p^{a-1} (1-p)^{b-1}\right) \\
+  &\propto \Big( p^y(1-p)^{n-y} \Big)
+    \Big( p^{a-1} (1-p)^{b-1}\Big) \\
+  &\propto p^{y+a-1} (1-p)^{n-y + b-1}
+\end{aligned}
+$$
+
+## Posterior distribution
+
+Based on the form of the density we can see that the posterior of $p$ must also be a Beta distribution with parameters,
+
+$$
+p|y,n,a,b \sim \text{Beta}(y+a, n-y + b)
+$$
