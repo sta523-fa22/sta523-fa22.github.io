@@ -221,7 +221,7 @@ schedule:
   day: 3
   lecture: "Shiny"
   slides: Lec18
-  screencast:
+  screencast: https://youtu.be/qQe78AKNRD8
   readings:
   - text: Shiny Docs & Gallery
     link: http://shiny.rstudio.com/
@@ -233,10 +233,14 @@ schedule:
 
 - week: 11
   day: 1
-  lecture: "Shiny - Cont."
+  lecture: "Shiny - Cont. (ABC)"
   screencast:
-  readings: ""
-  notes: 
+  readings:
+  - text: RSConf 2022 - Getting Started with Shiny
+    link: https://github.com/rstudio-conf-2022/get-started-shiny
+  - text: RSConf 2022 - Building production-quality Shiny applications
+    link: https://github.com/rstudio-conf-2022/shiny-prod-apps
+    
 
 - week: 11
   day: 3
