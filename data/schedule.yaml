@@ -236,10 +236,10 @@ schedule:
   lecture: "Shiny - Cont. (ABC)"
   screencast:
   readings:
-  - text: RSConf 2022 - Getting Started with Shiny
-    link: https://github.com/rstudio-conf-2022/get-started-shiny
-  - text: RSConf 2022 - Building production-quality Shiny applications
-    link: https://github.com/rstudio-conf-2022/shiny-prod-apps
+  - text: RStudio Conf 2022 workshops
+    link: https://www.rstudio.com/blog/talks-and-workshops-from-rstudio-conf-2022/#workshop-materials
+  - text: Awesome Shiny Extensions
+    link: https://github.com/nanxstats/awesome-shiny-extensions
     
 
 - week: 11
