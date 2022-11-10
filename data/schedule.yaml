@@ -234,7 +234,7 @@ schedule:
 - week: 11
   day: 1
   lecture: "Shiny - Cont. (ABC)"
-  screencast:
+  screencast: https://youtu.be/_ry9gae9O_E
   readings:
   - text: RStudio Conf 2022 workshops
     link: https://www.rstudio.com/blog/talks-and-workshops-from-rstudio-conf-2022/#workshop-materials
@@ -245,7 +245,7 @@ schedule:
 - week: 11
   day: 3
   lecture: "Profiling & Parallelization"
-  slides:
+  slides: Lec20
   screencast:
   readings:
   - text: "parallel Vignettes"
