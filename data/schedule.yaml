@@ -258,7 +258,7 @@ schedule:
 - week: 12
   day: 1
   lecture: "Spatial data"
-  slides: :Lec21
+  slides: Lec21
   screencast:
   readings:
   - text: "sf Vignettes"
