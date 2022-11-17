@@ -259,7 +259,7 @@ schedule:
   day: 1
   lecture: "Spatial data"
   slides: Lec21
-  screencast:
+  screencast: https://youtu.be/IH0GRVzBJ80
   readings:
   - text: "sf Vignettes"
     link: https://cran.r-project.org/web/packages/sf/vignettes/
