@@ -289,6 +289,11 @@ schedule:
 
 - week: 14
   day: 1
+  lecture: "More Tidy Models"
+  notes: "Midterm 2 out"
+
+- week: 14
+  day: 3
   lecture: "R Packages"
   slides:
   screencast:
@@ -299,15 +304,14 @@ schedule:
     link: https://usethis.r-lib.org/
   - text: Roxygen2
     link: https://roxygen2.r-lib.org/
-  notes: 
-  
-- week: 14
-  day: 3
-  lecture: "More R Packages"
-  slides:
-  screencast:
-  readings:
   - text: testthat
     link: https://testthat.r-lib.org/
   notes: 
   
+- week: 15
+  day: 3
+  notes: "Midterm 2 due" 
+  
+- week: 16
+  day: 5
+  notes: "Project due" 
