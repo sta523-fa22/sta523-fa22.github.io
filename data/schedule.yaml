@@ -269,7 +269,7 @@ schedule:
   day: 3
   lecture: "Tidy Models"
   screencast:
-  slides:
+  slides: Lec22
   readings:
   - text: "Tidy Models - Get Started"
     link: https://www.tidymodels.org/start/
