@@ -268,7 +268,7 @@ schedule:
 - week: 12
   day: 3
   lecture: "Tidy Models"
-  screencast:
+  screencast: https://youtu.be/Az1WYwFaYuI
   slides: Lec22
   readings:
   - text: "Tidy Models - Get Started"
@@ -290,6 +290,8 @@ schedule:
 - week: 14
   day: 1
   lecture: "More Tidy Models"
+  screencast:
+  slides: Lec23
   notes: "Midterm 2 out"
 
 - week: 14
