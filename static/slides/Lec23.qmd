@@ -84,7 +84,9 @@ hotels %>%
 ```{r}
 set.seed(123)
 
-splits = initial_split(hotels, strata = children)
+splits = initial_split(
+  hotels, strata = children
+)
 
 hotel_train = training(splits)
 hotel_test = testing(splits)
@@ -148,6 +150,11 @@ lr_recipe
 
 ##
 
+```{r include=FALSE}
+options(width=100)
+options(tibble.width = 100)
+```
+
 ::: {.small}
 ```{r}
 lr_recipe %>%
@@ -155,6 +162,11 @@ lr_recipe %>%
   bake(new_data = hotel_train)
 ```
 :::
+
+```{r include=FALSE}
+options(width=60)
+options(tibble.width = 60)
+```
 
 ## Workflow
 
@@ -171,10 +183,8 @@ lr_recipe %>%
 
 ::: {.small}
 ```{r}
-lr_fit = lr_work %>%
-  fit(data = hotel_train)
-
-lr_fit
+( lr_fit = lr_work %>%
+    fit(data = hotel_train) )
 ```
 :::
 
@@ -204,7 +214,7 @@ lr_perf %>%
 ```
 :::
 
-::: {.column width='50%'}
+::: {.column width='50%' .fragment}
 ```{r}
 lr_perf %>%
   yardstick::roc_curve(
@@ -256,11 +266,11 @@ lr_test_perf %>%
 ```{r}
 lr_roc_train = lr_perf %>%
   yardstick::roc_curve(children, .pred_children) %>% 
-  mutate(name="logistic train")
+  mutate(name="logistic - train")
 
 lr_roc_test = lr_test_perf %>%
   yardstick::roc_curve(children, .pred_children) %>% 
-  mutate(name="logistic test")
+  mutate(name="logistic - test")
 ```
 :::
 
@@ -285,17 +295,19 @@ bind_rows(
 
 For this we will be using the `glmnet` package which supports fitting lasso, ridge and elastic net models. 
 
-The mixture argument determines the type of model fit with: `1` -> Lasso, `0` -> Ridge, other -> elastic net.
+. . .
+
 
 ::: {.small}
 ```{r}
 lasso_model = logistic_reg(penalty = tune(), mixture = 1) %>%
   set_engine("glmnet")
-
-lasso_model %>%
-  translate()
 ```
 :::
+
+* `mixture` determines the type of model fit with: `1` -> Lasso, `0` -> Ridge, other -> elastic net.
+
+* `penalty` is $\lambda$ in the lasso model, scales the penalty for coefficient size.
 
 ##
 
@@ -303,6 +315,15 @@ lasso_model %>%
 lasso_model %>% 
   parameters()
 ```
+
+. . .
+
+```{r}
+lasso_model %>%
+  translate()
+```
+
+
 
 ## Lasso Recipe
 
@@ -313,7 +334,11 @@ Lasso (and Ridge) models are sensitive to the scale of the model features, and s
 lasso_recipe = lr_recipe %>%
   step_normalize(all_predictors())
 ```
+:::
 
+. . .
+
+::: {.small}
 ```{r}
 lasso_recipe %>%
   prep() %>%
@@ -330,19 +355,20 @@ lasso_recipe %>%
     add_recipe(lasso_recipe)
 )
 ```
+:::
 
 
 ## v-folds for hyperparameter tuning
 
 ```{r}
-hotel_vf = rsample::vfold_cv(hotel_train, v=5, strata = children)
-hotel_vf
+( hotel_vf = rsample::vfold_cv(hotel_train, v=5, strata = children) )
 ```
 
 ## grid search
 
 ::: {.small}
 ```{r}
+#| code-line-numbers: "|1|3|4-6|7|8"
 ( lasso_grid = lasso_work %>%
     tune_grid(
       hotel_vf,
@@ -357,6 +383,11 @@ hotel_vf
 :::
 
 ## Results
+
+```{r include=FALSE}
+options(width=50)
+options(tibble.width = 50)
+```
 
 :::: {.columns .small}
 ::: {.column width='50%'}
@@ -380,6 +411,11 @@ lasso_grid %>%
 ::::
 
 
+```{r include=FALSE}
+options(width=60)
+options(tibble.width = 60)
+```
+
 ## "Best" models
 
 ::: {.small}
@@ -391,15 +427,15 @@ lasso_grid %>%
 
 ## "Best" model
 
+::: {.small}
 ```{r}
-lasso_best = lasso_grid %>%
-  collect_metrics() %>%
-  mutate(mean = round(mean, 2)) %>%
-  arrange(desc(mean), desc(penalty)) %>%
-  slice(1)
-
-lasso_best
+( lasso_best = lasso_grid %>%
+    collect_metrics() %>%
+    mutate(mean = round(mean, 2)) %>%
+    arrange(desc(mean), desc(penalty)) %>%
+    slice(1) )
 ```
+:::
 
 ## Extracting predictions
 
@@ -407,9 +443,8 @@ Since we used `control_grid(save_pred = TRUE)` with `tune_grid()` we can recover
 
 ::: {.small}
 ```{r}
-lasso_train_perf = lasso_grid %>%
-  collect_predictions(parameters = lasso_best)
-lasso_train_perf
+( lasso_train_perf = lasso_grid %>%
+    collect_predictions(parameters = lasso_best) )
 ```
 :::
 
@@ -550,6 +585,11 @@ rf_grid = rf_work %>%
 
 ## "Best" parameters
 
+```{r include=FALSE}
+options(width=50)
+options(tibble.width = 50)
+```
+
 :::: {.columns .small}
 ::: {.column width='50%'}
 ```{r}
@@ -565,6 +605,11 @@ autoplot(rf_grid)
 :::
 ::::
 
+
+```{r include=FALSE}
+options(width=60)
+options(tibble.width = 60)
+```
 
 ## Refitting
 
