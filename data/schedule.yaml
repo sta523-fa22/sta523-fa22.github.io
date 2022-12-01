@@ -297,7 +297,7 @@ schedule:
 - week: 14
   day: 3
   lecture: "R Packages"
-  slides:
+  slides: Lec24
   screencast:
   readings:
   - text: R Packages
